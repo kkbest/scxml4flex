@@ -143,7 +143,7 @@ package scxml {
 	            			break;
 	        			case "raise":
 	        				var delay : Number = child.@delay ? Number(child.@delay) : 0;
-	        				f = function(scope : Object, dm : Object) : void {interpreter.send(child.@event, child.@id, null, delay)};
+	        				f = function(scope : Object, dm : Object) : void {interpreter.send(child.@event, child.@id, delay, null)};
 	        				f["data"] = child.@id;
 	        				break;
 	        			case "flexfunction":

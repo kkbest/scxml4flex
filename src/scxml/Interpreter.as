@@ -22,15 +22,14 @@ package scxml {
 	/** Given a document parsed as a <code>scmxml.SCXMLDocument</code>, 
 	 * this class will interpret that document. 
 	 * 
-	 * TODO: test cond. 
-	 * 
 	 * @author Johan Roxendal
+	 * @contact johan@roxendal.com
 	 */
 	public class Interpreter extends EventDispatcher implements IInterpreter {
 		
 		private var bContinue : Boolean = true; 
 
-		protected var configuration : Set;
+		public var configuration : Set;
 		
 		private var externalQueue : Queue;
 		private var internalQueue : Queue;
@@ -374,15 +373,24 @@ package scxml {
 		}
 
 
-		public function send(eventName : String, sendId : String = null, data : Object = null, delay : Number = 0) : void {
-//			TODO: need to be expanded by quite a bit. 
+		public function send(eventName : String, sendId : String = null, delay : Number = 0, data : Object = null) : void {
+//			TODO: sendId and cancel function broken.
+			
 			if(!data) data = {};
+			if(delay == 0) {
+				sendFunction(eventName, data);
+				return;
+			}
 			var timer : Timer = new Timer(delay *1000, 1);
 			timer.addEventListener(TimerEvent.TIMER, function(evt : TimerEvent) : void {
-	        	externalQueue.enqueue(new InterpreterEvent(eventName, data));
+	        	sendFunction(eventName, data);
 	  		});
 	  		if(sendId) sendDict[sendId] = timer;
 	        timer.start();
+		}
+		
+		public function sendFunction(name : String, data : Object) : void {
+			externalQueue.enqueue(new InterpreterEvent(name, data));
 		}
 		
 		public function cancelEvent(sendId : String) : void {
