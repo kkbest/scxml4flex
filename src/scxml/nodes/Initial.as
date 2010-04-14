@@ -6,7 +6,7 @@ package scxml.nodes {
 		private var functions : Array;
 		
 		public function Initial(startArray : Array) {
-			super(startArray);
+//			super(startArray); 
 			functions = [];
 		}
 		

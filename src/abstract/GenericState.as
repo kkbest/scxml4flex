@@ -130,7 +130,7 @@ package abstract {
 			for each(var p : String in optionalProperties)
 				if(node.hasOwnProperty("@" + p))
 					if(p == "initial")
-						this[p] = String(node.@[p]).split(" ");
+						this[p] = new Initial(String(node.@[p]).split(" "));
 					else
 						this[p] = String(node.@[p]);
 		}
