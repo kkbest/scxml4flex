@@ -10,12 +10,14 @@ package scxml {
 	public class SCXML extends Interpreter {
 		
 		private var compiler : Compiler;
+		private var finished : Boolean = false;
 		
 		public function SCXML() {
 			super();
 		}
 		override protected function onAppFinalState() : void {
 			super.onAppFinalState();
+			finished = true;
 			dispatchEvent(new SCXMLEvent(SCXMLEvent.FINAL_STATE_REACHED));
 		}
 		
@@ -27,13 +29,16 @@ package scxml {
 			compiler.parse(xml);
 		}
 		public function start() : void {
-			doc = compiler.document;
-			interpret(doc);
+			interpret(compiler.document);
 			dispatchEvent(new SCXMLEvent(SCXMLEvent.START));
 		}
 		public function get currentState() : String {
 			var config : Array = configuration.toList();
 			return config[config.length-1]["id"];
+		}
+		
+		public function isFinished() : Boolean {
+			return finished;
 		}
 	}
 }
