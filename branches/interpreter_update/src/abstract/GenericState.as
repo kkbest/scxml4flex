@@ -5,6 +5,7 @@ package abstract {
 	import interfaces.IState;
 	
 	import scxml.nodes.History;
+	import scxml.nodes.Initial;
 	import scxml.nodes.Transition;
 	
 	
@@ -17,8 +18,10 @@ package abstract {
         
         protected var sId : String;
         protected var nNum : Number;
+        protected var invId : String;
+		
         
-        protected var initialStates : Array; 
+        protected var initialStates : Initial; 
         protected var finalStates : Array;
         protected var historyArray : Array;
 		protected var transitionArray : Array;
@@ -63,10 +66,10 @@ package abstract {
 		public function get invoke() : Array {
 			return invokeArray;
 		}
-		public function set initial(s : Array) : void {
+		public function set initial(s : Initial) : void {
 			initialStates = s;
 		} 
-		public function get initial() : Array {
+		public function get initial() : Initial {
 			return initialStates;
 		}
 		
@@ -106,6 +109,13 @@ package abstract {
 		
 		public function get viewstate() : String {
 			return null;
+		}
+		
+		public function set invokeid(id : String) : void {
+			invId = id;
+		}
+		public function get invokeid() : String {
+			return invId;
 		}
 		
 //		public function set initExec(f : IExecutable) : void {
