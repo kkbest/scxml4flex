@@ -9,7 +9,7 @@ package scxml.nodes {
 		private var sourceState : GenericState;
 		private var targetArray : Array;
 		public var cond : Function;
-		public var event : String;
+		public var event : Array;
 		private var functions : Array;
 		
 		public function Transition(source : GenericState) {

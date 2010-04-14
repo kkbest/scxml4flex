@@ -16,7 +16,7 @@ package datastructures {
 		public function member(elem : *) : Boolean {
 			return ArrayUtils.member(elem, a);
 		}
-		public function deleteItem(elem : *) : void {
+		public function remove(elem : *) : void {
 			a = ArrayUtils.filter(function(item : *) : Boolean {
 				return item != elem;
 			}, a);
@@ -36,5 +36,12 @@ package datastructures {
 			return a.toString();
 		}
 		
+		public function filter(f : Function) : OrderedSet {
+			return new OrderedSet(ArrayUtils.filter(f, a));
+		}
+		
+		public function toList() : Array {
+			return a;
+		}
 	}
 }
