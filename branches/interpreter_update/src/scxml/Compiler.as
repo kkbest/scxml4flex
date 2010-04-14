@@ -100,6 +100,12 @@ package scxml {
 					case "data":
 						doc.dataModel[String(node.@id)] = String(node.@expr);
 						break;
+					case "initial":
+						var transitionNode : XML = node.children()[0];
+						parentState.initial = new Initial(transitionNode.@target.split(" "));
+						
+						parentState.initial.setExecFunctions(makeExecContent(transitionNode, i));
+						break;
 					
 				}
 				
@@ -142,8 +148,7 @@ package scxml {
 	            			f = function(scope : Object, dm : Object) : void {doc.dataModel[String(child.@name)] = String(child.@expr)};
 	            			break;
 	        			case "raise":
-	        				var delay : Number = child.@delay ? Number(child.@delay) : 0;
-	        				f = function(scope : Object, dm : Object) : void {interpreter.send(child.@event, child.@id, delay, null)};
+	        				f = function(scope : Object, dm : Object) : void {interpreter.raiseFunction(child.@event.split("."))};
 	        				f["data"] = child.@id;
 	        				break;
 	        			case "flexfunction":
@@ -168,7 +173,8 @@ package scxml {
 							};
 							break;
 						case "send":
-							throw new IllegalOperationError("Not Implemented, use raise for internal errors instead.");
+							f = function(scope : Object, dm : Object) : void {interpreter.send(child.@event.split("."), child.@sendId, parseInt(child.@delay))};
+							break;
 	            		default:
 	            			throw new SCXMLValidationError("Parsing failed: a " + 
 	            				nodeName + " node may not be the child of a " + node.name() + " node.");
@@ -189,6 +195,7 @@ package scxml {
 			var main : MainState = new MainState("__main__", GenericState(doc.getState("root")), 0);
 			node.@id = "__main__";
 			main.setProperties(node);
+			
 			doc.pushState(main);
 			doc.mainState = main;
 		}

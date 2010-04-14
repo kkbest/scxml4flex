@@ -109,65 +109,78 @@ package scxml {
 			}
 				
 //			threading.Thread(target=self.mainEventLoop).start()
+			var timer : Timer = new Timer(100, 1);
+			timer.addEventListener(TimerEvent.TIMER, function(evt : Event) : void {mainEventLoop()});
+			timer.start();
 			
 		}
 		
+		private function onTimer(event : TimerEvent) : void {
+			if(bContinue)
+				mainEventLoop();
+			else {
+				trace("exit interpreter");
+				var timer : Timer = Timer(event.currentTarget);
+				timer.stop();	
+				timer.removeEventListener(TimerEvent.TIMER, onTimer);
+				
+			}
+				// if we get here, we have reached a top-level final state or some external entity has set g_continue to False        
+				//	        exitInterpreter();
+		}
+		
 		private function mainEventLoop() : void {
-	        while(bContinue) {
+//	        while(bContinue) {
 
-	            for each(var state : IState in statesToInvoke) {
-	                for each(var inv : Invoke in state.invoke) {
-	                    invoke(inv, externalQueue);
-					}
+            for each(var state : IState in statesToInvoke) {
+                for each(var inv : Invoke in state.invoke) {
+                    invoke(inv, externalQueue);
 				}
-	            statesToInvoke.clear();
+			}
+            statesToInvoke.clear();
 
-	            previousConfiguration = configuration;
+            previousConfiguration = configuration;
 
-	            var externalEvent : InterpreterEvent = externalQueue.dequeue() // this call blocks until an event is available
+            var externalEvent : InterpreterEvent = externalQueue.dequeue() // this call blocks until an event is available
 
-	            trace("external event found: " + externalEvent.name);
+            trace("external event found: " + externalEvent.name);
 
-	            dm["_event"] = externalEvent;
-	            if(externalEvent.invokeid) {
-					for each(var s : IState in configuration) {
-						for each(var i : Invoke in s.invoke) {
-	                        if(i.invokeid == externalEvent.invokeid) {  // event is the result of an <invoke> in this state
-	                            applyFinalize(i, externalEvent)
-							}
-						}
-					}
-				}
-
-	            var enabledTransitions : OrderedSet = selectTransitions(externalEvent);
-	            if(enabledTransitions) {
-	                microstep(enabledTransitions.toList());
-
-	                // now take any newly enabled null transitions and any transitions triggered by internal events
-	                var macroStepComplete : Boolean = false;
-	                while(!macroStepComplete) {
-	                    enabledTransitions = selectEventlessTransitions();
-	                    if(enabledTransitions.isEmpty()) {
-	                        if(internalQueue.isEmpty()) { 
-	                            macroStepComplete = true;
-							} else {
-	                            var internalEvent : InterpreterEvent = internalQueue.dequeue() // this call returns immediately if no event is available
-	                            dm["event"] = internalEvent;
-	                            enabledTransitions = selectTransitions(internalEvent);
-							}
-						}
-
-	                    if(enabledTransitions) {
-	                         microstep(enabledTransitions.toList());
+            dm["_event"] = externalEvent;
+            if(externalEvent.invokeid) {
+				for each(var s : IState in configuration) {
+					for each(var i : Invoke in s.invoke) {
+                        if(i.invokeid == externalEvent.invokeid) {  // event is the result of an <invoke> in this state
+                            applyFinalize(i, externalEvent)
 						}
 					}
 				}
 			}
 
-	        // if we get here, we have reached a top-level final state or some external entity has set g_continue to False        
-//	        exitInterpreter();
-			trace("exit interpreter");
-					
+            var enabledTransitions : OrderedSet = selectTransitions(externalEvent);
+            if(enabledTransitions) {
+                microstep(enabledTransitions.toList());
+
+                // now take any newly enabled null transitions and any transitions triggered by internal events
+                var macroStepComplete : Boolean = false;
+                while(!macroStepComplete) {
+                    enabledTransitions = selectEventlessTransitions();
+                    if(enabledTransitions.isEmpty()) {
+                        if(internalQueue.isEmpty()) { 
+                            macroStepComplete = true;
+						} else {
+                            var internalEvent : InterpreterEvent = internalQueue.dequeue() // this call returns immediately if no event is available
+                            dm["event"] = internalEvent;
+                            enabledTransitions = selectTransitions(internalEvent);
+						}
+					}
+
+                    if(enabledTransitions) {
+                         microstep(enabledTransitions.toList());
+					}
+				}
+			}
+//			}
+
 		}
 		
 		
@@ -235,7 +248,7 @@ package scxml {
 		
   		private function microstep(enabledTransitions : Array) : void {
 		    exitStates(enabledTransitions);
-		    executeTransitionContent(enabledTransitions.toList());
+		    executeTransitionContent(enabledTransitions);
 		    enterStates(enabledTransitions);
 		    // Logging
 
@@ -244,7 +257,7 @@ package scxml {
 			    trace("configuration: [" + config.slice(1).join(", ") + "]");
 		    }
 		    // TODO: revise this
-		    dispatchEvent(new SCXMLEvent(SCXMLEvent.STATE_ENTERED, config[config.length-1], enabledTransitions.toList()[0]));
+		    dispatchEvent(new SCXMLEvent(SCXMLEvent.STATE_ENTERED, config[config.length-1], enabledTransitions[0]));
 		   
 		}
 		
@@ -262,7 +275,7 @@ package scxml {
 	        for each(var s1 : IState in statesToExit)
 	            statesToInvoke.remove(s1);
 
-	        statesToExit = statesToExit.toList().sort(exitOrder);
+	        statesToExit = new OrderedSet(statesToExit.toList().sort(exitOrder));
 
 	        for each(var s2 : IState in statesToExit) {
 				var f : Function;
@@ -293,7 +306,7 @@ package scxml {
 		private function enterStates(enabledTransitions : Array) : void {
 		    var statesToEnter : OrderedSet = new OrderedSet();
 		    var statesForDefaultEntry : OrderedSet = new OrderedSet();
-		    for each(var t : Transition in enabledTransitions.toList()) {
+		    for each(var t : Transition in enabledTransitions) {
 		        if (t.target) {
 		            var LCA : IState = findLCA([t.source].concat(getTargetStates(t.target)));
 					if(isParallelState(LCA)) {
@@ -308,9 +321,8 @@ package scxml {
 	        for each(var s1 : IState in statesToEnter)
 	            statesToInvoke.add(s1);
 
-	        statesToEnter = statesToEnter.toList().sort(enterOrder);
 	        
-	        for each(var s2 : IState in statesToEnter) {
+	        for each(var s2 : IState in statesToEnter.toList().sort(enterOrder)) {
 	            configuration.add(s2);
 	            for each(var content : IExecutable in s2.onentry)
 	                executeContent(content);
@@ -509,17 +521,17 @@ package scxml {
 			// stub
 		}
 
-		public function send(eventName : Array, sendId : String = null, delay : Number = 0, data : Object = null) : void {
+		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null) : void {
 //			TODO: sendId and cancel function broken.
-			
+			if(eventName is String) eventName = eventName.split(".");
 			if(!data) data = {};
 			if(delay == 0) {
-				sendFunction(eventName, data);
+				sendFunction(eventName as Array, data);
 				return;
 			}
 			var timer : Timer = new Timer(delay *1000, 1);
 			timer.addEventListener(TimerEvent.TIMER, function(evt : TimerEvent) : void {
-	        	sendFunction(eventName, data);
+	        	sendFunction(eventName as Array, data);
 	  		});
 	  		if(sendId) sendDict[sendId] = timer;
 	        timer.start();
@@ -527,6 +539,10 @@ package scxml {
 		
 		public function sendFunction(name : Array, data : Object) : void {
 			externalQueue.enqueue(new InterpreterEvent(name, data));
+		}
+		
+		public function raiseFunction(event : Array) : void {
+			internalQueue.enqueue(new InterpreterEvent(event, {}));
 		}
 		
 		public function cancelEvent(sendId : String) : void {

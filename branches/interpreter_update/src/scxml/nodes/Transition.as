@@ -31,7 +31,7 @@ package scxml.nodes {
 			
 			for each(var p : String in optionalProperties)
 				if(node.hasOwnProperty("@" + p))
-					if(p == "target")
+					if(p == "target" || p == "event")
 						this[p] = String(node.@[p]).split(" ");
 					else
 						this[p] = String(node.@[p]);
