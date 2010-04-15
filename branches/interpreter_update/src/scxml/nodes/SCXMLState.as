@@ -10,7 +10,7 @@ package scxml.nodes {
 		
 		public function SCXMLState(sId : String, pState : IState, num : Number = NaN) { 
 			super(sId, pState, num); 
-			optionalProperties = ["src", "viewstate", "initial"];
+			optionalProperties = ["viewstate", "initial"];
 		}
 		
 		public function set viewstate(id : String) : void {
