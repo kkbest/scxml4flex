@@ -192,11 +192,11 @@ package scxml {
 		}
 		
 		private function parseRoot(node : XML) : void {
-			var main : MainState = new MainState("__main__", GenericState(doc.getState("root")), 0);
+			var main : MainState = new MainState("__main__", null, 0);
 			node.@id = "__main__";
 			main.setProperties(node);
 			
-			doc.pushState(main);
+//			doc.pushState(main);
 			doc.mainState = main;
 		}
 		

@@ -14,13 +14,15 @@ package interfaces {
 		
 		function getChildStates() : Array;
 		
-		function get isAtomicState() : Boolean;
-		function get isCompoundState() : Boolean;
 		function get transition() : Array;
 		function get history() : Array;
 		function get invoke() : Array;
 		function get initial() : Initial;
 		function get viewstate() : String;
+		function get state() : Array;
+		function get parallel() : Array;
+		function get final() : Array;
+		
 		
 //		function get initExec() : IExecutable;
 		

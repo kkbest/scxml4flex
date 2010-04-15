@@ -4,6 +4,8 @@ package scxml.nodes {
 	
 	import interfaces.IExecutable;
 	
+	import util.ArrayUtils;
+	
 	public class Transition extends SCXMLNode implements IExecutable {
 		
 		private var sourceState : GenericState;
@@ -31,9 +33,11 @@ package scxml.nodes {
 			
 			for each(var p : String in optionalProperties)
 				if(node.hasOwnProperty("@" + p))
-					if(p == "target" || p == "event")
+					if(p == "target")
 						this[p] = String(node.@[p]).split(" ");
-					else
+					else if(p == "event") {
+						this[p] = ArrayUtils.map(function(x : String) : Array {return x.replace(/(.*)\.\*$/, "$1").split(".")}, node.@[p].split(" ")); 
+					} else
 						this[p] = String(node.@[p]);
 		}
 		

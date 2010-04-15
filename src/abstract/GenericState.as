@@ -25,8 +25,8 @@ package abstract {
         protected var finalStates : Array;
         protected var historyArray : Array;
 		protected var transitionArray : Array;
-        protected var state : Array;
-        protected var parallel : Array;
+        protected var stateArray : Array;
+        protected var parallelArray : Array;
         protected var invokeArray : Array;
         
 //        protected var initTransitionFunction : IExecutable;
@@ -35,11 +35,12 @@ package abstract {
 			onEntryArray = [];
 			onExitArray = [];
 			transitionArray = [];
-			state = [];
-			parallel = [];
+			stateArray = [];
+			parallelArray = [];
 			finalStates = [];
 			invokeArray = [];
 			historyArray = [];
+			initialStates = new Initial([]);
 			
 			parentState = pState;
 			this.sId = sId;
@@ -72,6 +73,15 @@ package abstract {
 		public function get initial() : Initial {
 			return initialStates;
 		}
+		public function get state() : Array {
+			return stateArray;
+		}
+		public function get final() : Array {
+			return finalStates;
+		}
+		public function get parallel() : Array {
+			return parallelArray;
+		}
 		
 		public function get onexit() : Array {
 			return onExitArray;
@@ -87,7 +97,7 @@ package abstract {
 		}
 		
 		public function getChildStates() : Array {
-			return [].concat(state, parallel, finalStates, historyArray);
+			return [].concat(stateArray, parallelArray, finalStates, historyArray);
 		}
 		public function addState(s : GenericState) : void {
 			//TODO: but what if the GenericState is a Parallel?
@@ -98,13 +108,6 @@ package abstract {
 		}
 		public function addHistory(s : History) : void {
 			historyArray.push(s);
-		}
-		
-		public function get isAtomicState() : Boolean {
-			return state.length == 0 && parallel.length == 0 && finalStates.length == 0;
-		}
-		public function get isCompoundState() : Boolean {
-			return (state.length > 0 || parallel.length > 0 || finalStates.length > 0);
 		}
 		
 		public function get viewstate() : String {

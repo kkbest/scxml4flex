@@ -52,12 +52,15 @@ package scxml {
 		private var statesToInvoke : OrderedSet;
 		private var previousConfiguration : OrderedSet;
 		
+		private var macroStepEnabled : Boolean = false;
+		
 		
 		public function Interpreter(root : IStateClient = null) {
 			flexContainer = root;
 			historyValue = {};
 			sendDict = {};
 			externalQueue = new Queue();
+			externalQueue.addEventListener(Event.ADDED, onExternalEvent);
 			internalQueue = new Queue();
 			configuration = new OrderedSet();
 			
@@ -79,15 +82,9 @@ package scxml {
 			enterStates([transition]);
 			
 			startEventLoop();
-			
-//			var timer : Timer = new Timer(100);
-//			timer.addEventListener(TimerEvent.TIMER, function(evt : Event) : void {startEventLoop()});
-//			timer.start();
-			
 		}
 		
 		protected function onAppFinalState() : void {
-			bContinue = false;
 		}
 		
 		private function startEventLoop() : void {
@@ -104,41 +101,40 @@ package scxml {
 						enabledTransitions = selectTransitions(internalEvent);
 					}
 				}
-				if(enabledTransitions)
-					microstep(enabledTransitions.toList());
+				if(!enabledTransitions.isEmpty())
+					microstep(enabledTransitions);
 			}
-				
-//			threading.Thread(target=self.mainEventLoop).start()
-			var timer : Timer = new Timer(100, 1);
+			macroStepEnabled = true;
+			var timer : Timer = new Timer(0, 1);
 			timer.addEventListener(TimerEvent.TIMER, function(evt : Event) : void {mainEventLoop()});
-			timer.start();
-			
+				
+			if(!externalQueue.isEmpty()) timer.start();
 		}
 		
-		private function onTimer(event : TimerEvent) : void {
-			if(bContinue)
-				mainEventLoop();
-			else {
-				trace("exit interpreter");
-				var timer : Timer = Timer(event.currentTarget);
-				timer.stop();	
-				timer.removeEventListener(TimerEvent.TIMER, onTimer);
-				
+		
+		private function onExternalEvent(event : Event) : void {
+//			trace("onExternalEvent", macroStepEnabled, externalQueue);
+			if(!bContinue) {
+				trace("The statemachine has reached it's final state(s) and is no longer accepting events.");
+				return;
 			}
-				// if we get here, we have reached a top-level final state or some external entity has set g_continue to False        
-				//	        exitInterpreter();
+			if(macroStepEnabled)
+				mainEventLoop();
+				
 		}
 		
 		private function mainEventLoop() : void {
 //	        while(bContinue) {
 
-            for each(var state : IState in statesToInvoke) {
-                for each(var inv : Invoke in state.invoke) {
-                    invoke(inv, externalQueue);
-				}
-			}
-            statesToInvoke.clear();
-
+//            for each(var state : IState in statesToInvoke) {
+//                for each(var inv : Invoke in state.invoke) {
+//                    invoke(inv, externalQueue);
+//				}
+//			}
+//            statesToInvoke.clear();
+			
+			macroStepEnabled = false;
+			
             previousConfiguration = configuration;
 
             var externalEvent : InterpreterEvent = externalQueue.dequeue() // this call blocks until an event is available
@@ -157,8 +153,8 @@ package scxml {
 			}
 
             var enabledTransitions : OrderedSet = selectTransitions(externalEvent);
-            if(enabledTransitions) {
-                microstep(enabledTransitions.toList());
+            if(!enabledTransitions.isEmpty()) {
+                microstep(enabledTransitions);
 
                 // now take any newly enabled null transitions and any transitions triggered by internal events
                 var macroStepComplete : Boolean = false;
@@ -174,19 +170,48 @@ package scxml {
 						}
 					}
 
-                    if(enabledTransitions) {
-                         microstep(enabledTransitions.toList());
+                    if(!enabledTransitions.isEmpty()) {
+                         microstep(enabledTransitions);
 					}
 				}
 			}
 //			}
-
+			for each(var state : IState in statesToInvoke) {
+				for each(var inv : Invoke in state.invoke) {
+					invoke(inv, externalQueue);
+				}
+			}
+			statesToInvoke.clear();
+			
+			if(!externalQueue.isEmpty())
+				mainEventLoop();
+			else
+				macroStepEnabled = true;
 		}
 		
+		private function exitInterpreter() : void {
+	        var inFinalState : Boolean = false;
+	        var statesToExit : OrderedSet = configuration.sort(exitOrder);
+	        for each(var s : IState in statesToExit) {
+	            for each(var content : IExecutable in s.onexit)
+	                executeContent(content);
+	            for each(var inv : Invoke in s.invoke)
+	                cancelInvoke(inv);
+	            if (isFinalState(s) && isScxmlState(s.parent))
+	                inFinalState = true;
+	            configuration.remove(s);
+			}
+	        if (inFinalState) {
+	            if (invId && dm["_parent"]) 
+	                dm["_parent"].enqueue(new InterpreterEvent(["done", "invoke", invId], {}))
+	            trace( "Exiting interpreter");
+			}
+	    //        sendDoneEvent(???)
+		}
 		
 		private function selectEventlessTransitions() : OrderedSet {
 			var enabledTransitions : OrderedSet = new OrderedSet();
-			var atomicStates : OrderedSet = configuration.filter(isAtomicState);
+			var atomicStates : Array = ArrayUtils.filter(isAtomicState, configuration);
 			for each(var state : IState in atomicStates) {
 				if(!isPreempted(state, enabledTransitions)) {
 					var done : Boolean = false;
@@ -207,7 +232,7 @@ package scxml {
 		
 		private function selectTransitions(event : InterpreterEvent) : OrderedSet {
 		    var enabledTransitions : OrderedSet = new OrderedSet();
-		    var atomicStates : OrderedSet = configuration.filter(isAtomicState);
+		    var atomicStates : Array = ArrayUtils.filter(isAtomicState, configuration);
 			
 			for each(var state : IState in atomicStates) {
 	            if(state.invokeid && state.invokeid == event.invokeid) {  // event is the result of an <invoke> in this state
@@ -252,7 +277,7 @@ package scxml {
 		    enterStates(enabledTransitions);
 		    // Logging
 
-	    	var config : Array = ArrayUtils.mapProperty(configuration.toList(), "id");
+	    	var config : Array = ArrayUtils.mapProperty(configuration, "id");
 		    if(doLogging) {
 			    trace("configuration: [" + config.slice(1).join(", ") + "]");
 		    }
@@ -275,17 +300,17 @@ package scxml {
 	        for each(var s1 : IState in statesToExit)
 	            statesToInvoke.remove(s1);
 
-	        statesToExit = new OrderedSet(statesToExit.toList().sort(exitOrder));
+	        statesToExit = statesToExit.sort(exitOrder);
 
 	        for each(var s2 : IState in statesToExit) {
 				var f : Function;
-	            for each(var h : History in s.history) {
+	            for each(var h : History in s2.history) {
 	                if(h.type == History.TYPE_DEEP) {
 	                    f = function(s0 : IState) : Boolean {return isAtomicState(s0) && isDescendant(s0,s2)}; 
 					} else {
 						f = function(s0 : IState) : Boolean {return s0.parent == s2};
 					}
-	                historyValue[h.id] = configuration.filter(f);
+	                historyValue[h.id] = ArrayUtils.filter(f, configuration);
 				}
 			}
 	        for each(var s3 : IState in statesToExit) {
@@ -312,9 +337,10 @@ package scxml {
 					if(isParallelState(LCA)) {
 	                    for each(var child : IState in getChildStates(LCA))
 	                        addStatesToEnter(child,LCA,statesToEnter,statesForDefaultEntry);
+					}
 	                for each(var s : IState in getTargetStates(t.target))
 	                    addStatesToEnter(s,LCA,statesToEnter,statesForDefaultEntry);
-					}
+					
 				}
 			}
 
@@ -322,7 +348,7 @@ package scxml {
 	            statesToInvoke.add(s1);
 
 	        
-	        for each(var s2 : IState in statesToEnter.toList().sort(enterOrder)) {
+	        for each(var s2 : IState in statesToEnter.sort(enterOrder)) {
 	            configuration.add(s2);
 	            for each(var content : IExecutable in s2.onentry)
 	                executeContent(content);
@@ -338,9 +364,12 @@ package scxml {
 	                        internalQueue.enqueue(new InterpreterEvent(["done", "state", grandparent.id], {}));
 				}
 			}
-	        for each(var s3 : IState  in configuration.toList())
-	            if(isFinalState(s) && isScxmlState(s3.parent))
+	        for each(var s3 : IState  in configuration)
+	            if(isFinalState(s3) && isScxmlState(s3.parent)) {
 	                bContinue = false;
+					exitInterpreter();
+					onAppFinalState();
+				}
 		}
 		
 		private function addStatesToEnter(s : IState, root : IState, statesToEnter : OrderedSet, statesForDefaultEntry : OrderedSet) : void {
@@ -373,7 +402,7 @@ package scxml {
 			            for each(var pChild : IState in getChildStates(anc))
 			                if (!ArrayUtils.any(ArrayUtils.map(
 			                	function(s : IState) : Boolean{return isDescendant(s,anc)},
-			                	statesToEnter.toList())))
+			                	statesToEnter)))
 			                    	addStatesToEnter(pChild,anc,statesToEnter,statesForDefaultEntry)
 			    }
 			}
@@ -391,13 +420,14 @@ package scxml {
 	 	}
 	 	
 	 	private function findLCA(stateList : Array) : IState {
-		    for each(var anc : IState in getProperAncestors(stateList[0], null))
+		    for each(var anc : IState in getProperAncestors(stateList[0], null)) {
 		        if (ArrayUtils.all(ArrayUtils.map(
-		        function(s : *) : Boolean {return isDescendant(s,anc)}, 
+		        function(s : IState) : Boolean {return isDescendant(s,anc)}, 
 		        stateList.slice(1, stateList.length))))
 		            return anc;
-            trace("findLCA, fail");
-            return null;
+				
+			}
+			return null;
 	 	}
 	 	
 	 	private function getTargetStates(targetIDs : Array) : Array {
@@ -409,7 +439,7 @@ package scxml {
 	 	
 	 	private function getProperAncestors(state : IState, root : IState) : Array {
 		    var ancestors : Array = [];
-		    while(state && state.parent != root) {
+		    while(state.parent && state.parent != root) {
 		        state = state.parent;
 		        ancestors.push(state);
 		    }
@@ -446,7 +476,7 @@ package scxml {
 				return true;
 			}
 				
-		    for each(var elem : String in eventList) {
+		    for each(var elem : Array in eventList) {
 		        if(prefixList(elem, event))
 		            return true; 
 			}
@@ -475,17 +505,17 @@ package scxml {
 		
 		
 		private function isScxmlState(s : IState) : Boolean {
-		    return Boolean(s.parent);
+		    return s.parent == null;
 		}
 		
 		
-		private function isAtomicState(s : Object) : Boolean {
-			return s is Final || (s is SCXMLNode && s.state == [] && s.parallel == [] && s.final == [])
+		private function isAtomicState(s : IState) : Boolean {
+			return s is Final || (s is SCXMLNode && s.state.length + s.parallel.length + s.final.length == 0);
 		}
 		
 		
 		private function isCompoundState(s : Object) : Boolean {
-		    return (s is SCXMLNode || s.state != [] || s.parallel != [] || s.final != []);
+		    return (s is SCXMLNode || s.state.length + s.parallel.length + s.final.length > 0);
 		}
 		
 		private function documentOrder(s1 : IState, s2 : IState) : Number {
@@ -525,7 +555,7 @@ package scxml {
 //			TODO: sendId and cancel function broken.
 			if(eventName is String) eventName = eventName.split(".");
 			if(!data) data = {};
-			if(delay == 0) {
+			if(!delay || delay == 0) {
 				sendFunction(eventName as Array, data);
 				return;
 			}

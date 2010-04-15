@@ -3,45 +3,46 @@ package datastructures {
 	
 	import util.ArrayUtils;
 
-	public class OrderedSet {
+	public dynamic class OrderedSet extends Array {
 		
-		private var a : Array;
+//		private var a : Array;
 		
 		public function OrderedSet(start : Array = null) {
+			super();
 			if(!start) 
 				start = [];
-			a = [].concat(start);
+			for each(var elem : * in start)
+				push(elem);
 		}
 		
 		public function member(elem : *) : Boolean {
-			return ArrayUtils.member(elem, a);
+			return ArrayUtils.member(elem, this);
 		}
 		public function remove(elem : *) : void {
-			a = ArrayUtils.filter(function(item : *) : Boolean {
-				return item != elem;
-			}, a);
+			var n : int = this.indexOf(elem);
+			this.splice(n, 1);
+			
 		}
 		public function isEmpty() : Boolean {
-			return a.length == 0;
+			return length == 0;
 		}
 		public function add(elem : *) : void {
+			if(!elem) throw new Error("null elem added to OrderedSet");
 			if(!member(elem)) 
-				a.push(elem);
+				push(elem);
 		}
 		public function clear() : void {
-			a = [];
+//			a = [];
+			splice(0);
 		}
 		
-		public function toString():String {
-			return a.toString();
-		}
 		
-		public function filter(f : Function) : OrderedSet {
-			return new OrderedSet(ArrayUtils.filter(f, a));
-		}
+//		override public function filter(f : Function) : OrderedSet {
+//			return new OrderedSet(ArrayUtils.filter(f, this));
+//		}
 		
-		public function toList() : Array {
-			return a;
-		}
+//		public function toList() : Array {
+//			return [].concat(this);
+//		}
 	}
 }

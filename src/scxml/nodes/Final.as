@@ -15,7 +15,7 @@ package scxml.nodes {
 			throw new SCXMLValidationError("Inital tag not allowed as child of Final");
 		} 
 		override public function get initial() : Initial {
-			return null;
+			return new Initial([]);
 		}
 		
 		override public function get transition() : Array {
