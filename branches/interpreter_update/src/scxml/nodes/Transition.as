@@ -44,9 +44,9 @@ package scxml.nodes {
 		public function setExecFunctions(array : Array) : void {
 			functions = array;
 		}
-		public function executeContent(scope : Object, dataModel : Object) : void {
+		public function executeContent(dataModel : Object) : void {
 			for each(var f : Function in functions)
-				f(scope, dataModel);
+				f(dataModel);
 		}
 		
 		public function toString() : String {
