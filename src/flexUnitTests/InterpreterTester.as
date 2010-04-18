@@ -1,11 +1,17 @@
 package flexUnitTests {
+	import flash.events.Event;
+	import flash.utils.Timer;
+	
 	import flexunit.framework.Assert;
 	
 	import scxml.SCXML;
+	import scxml.events.SCXMLEvent;
 
 	public class InterpreterTester {		
 		
-		[Embed(source="../../unittest_xml/history.xml", mimeType="text/xml")]
+		private var interpreter : SCXML;
+		
+		[Embed(source="../../unittest_xml/colors.xml", mimeType="text/xml")]
 		protected const HistoryXML : Class;
 		
 		
@@ -29,15 +35,22 @@ package flexUnitTests {
 		{
 		}
 		
+//		private function onDone(event : Event) : void {
+//			Assert.assertTrue(!interpreter.isFinished());
+//		}
+		
 		[Test]
 		public function testHistory() : void {
-			var interpreter : SCXML = new SCXML();
+			interpreter = new SCXML();
+//			interpreter.addEventListener(SCXMLEvent.FINAL_STATE_REACHED, onDone);
 			interpreter.source = XML(new HistoryXML());
-			interpreter.send("e1");
-			interpreter.send("pause");
-			interpreter.send("resume");
-			interpreter.send("terminate");
+			interpreter.start();
+			
 			Assert.assertTrue(interpreter.isFinished());
+//			interpreter.send("e1");
+//			interpreter.send("pause");
+//			interpreter.send("resume");
+//			interpreter.send("terminate");
 			
 			
 			

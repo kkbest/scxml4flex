@@ -244,7 +244,7 @@ package scxml {
 	                for each(var s : IState in [state].concat(getProperAncestors(state, null))) {
 	                    if(done) break;
 	                    for each(var t : Transition in s.transition) {
-	                        if(t.event && nameMatch(t.event, event.name) && conditionMatch(t)) {
+	                        if(t.event.length > 0 && nameMatch(t.event, event.name) && conditionMatch(t)) {
 	                            enabledTransitions.add(t);
 	                            done = true;
 	                            break;
@@ -325,7 +325,7 @@ package scxml {
 		
 		private function executeContent(obj : IExecutable) : void {
 			if(obj.executeContent != null)
-				obj.executeContent(flexContainer, dm)
+				obj.executeContent(dm)
 		}
 		
 		private function enterStates(enabledTransitions : Array) : void {
@@ -397,13 +397,13 @@ package scxml {
 				        
 			    }
 			    for each(var anc : IState in getProperAncestors(s,root)) {
-			        statesToEnter.add(anc)
-			        if (isParallelState(anc))
+			        statesToEnter.add(anc);
+			        if(isParallelState(anc))
 			            for each(var pChild : IState in getChildStates(anc))
 			                if (!ArrayUtils.any(ArrayUtils.map(
 			                	function(s : IState) : Boolean{return isDescendant(s,anc)},
 			                	statesToEnter)))
-			                    	addStatesToEnter(pChild,anc,statesToEnter,statesForDefaultEntry)
+			                    	addStatesToEnter(pChild,anc,statesToEnter,statesForDefaultEntry);
 			    }
 			}
 		}
@@ -487,7 +487,7 @@ package scxml {
 		    if (t.cond == null)
 		        return true;
 		    else
-		        return t.cond(dm)
+		        return t.cond(dm) as Boolean;
 		}
 		
 		private function isParallelState(s : IState) : Boolean {
@@ -552,7 +552,6 @@ package scxml {
 		}
 
 		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null) : void {
-//			TODO: sendId and cancel function broken.
 			if(eventName is String) eventName = eventName.split(".");
 			if(!data) data = {};
 			if(!delay || delay == 0) {
