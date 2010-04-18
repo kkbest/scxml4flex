@@ -1,22 +1,25 @@
 <scxml initial="red">
 	<final id="f1" />
-
+	
 	<state id="red">
 		<onentry>
-			<send event="e1" />
+			<send event="e1" id="snd" delay="3" />
+			<cancel sendid="snd" />
 		</onentry>
 		<transition event="e1" target="green" />
 	</state>
 
 	<state id="green">
 		<onentry>
-			<send event="e1" />
+			<raise event="e1" />
 		</onentry>
 		<transition event="e1" target="blue" />
 	</state>
 
 	<state id="blue" initial="subblue1">
-
+		<onentry>
+			<log expr="'logging!'" />
+		</onentry>
 		<state id="subblue1">
 			<transition target="f1" />
 		</state>
