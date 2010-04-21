@@ -4,9 +4,8 @@ package abstract {
 	import interfaces.IExecutable;
 	import interfaces.IState;
 	
-	import scxml.nodes.History;
-	import scxml.nodes.Initial;
-	import scxml.nodes.Transition;
+	import scxml.invoke.Invoke;
+	import scxml.nodes.*;
 	
 	
 	public class GenericState extends SCXMLNode implements IState {
@@ -67,6 +66,7 @@ package abstract {
 		public function get invoke() : Array {
 			return invokeArray;
 		}
+		
 		public function set initial(s : Initial) : void {
 			initialStates = s;
 		} 
@@ -108,6 +108,9 @@ package abstract {
 		}
 		public function addHistory(s : History) : void {
 			historyArray.push(s);
+		}
+		public function addInvoke(inv : Invoke) : void {
+			invokeArray.push(inv);
 		}
 		
 		public function get viewstate() : String {

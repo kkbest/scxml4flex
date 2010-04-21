@@ -5,7 +5,6 @@ package scxml {
 	import datastructures.OrderedSet;
 	import datastructures.Queue;
 	
-	import flash.errors.IllegalOperationError;
 	import flash.events.*;
 	import flash.utils.Timer;
 	
@@ -14,10 +13,10 @@ package scxml {
 	import interfaces.IState;
 	
 	import mx.core.IStateClient;
-	import mx.states.State;
 	
 	import scxml.events.InterpreterEvent;
 	import scxml.events.SCXMLEvent;
+	import scxml.invoke.Invoke;
 	import scxml.nodes.*;
 	
 	import util.ArrayUtils;
@@ -41,7 +40,7 @@ package scxml {
 		private var dm : Object;
 		private var historyValue : Object;
 		
-		protected var doc : SCXMLDocument;
+		public var doc : SCXMLDocument;
 		
 		private var flexContainer : IStateClient;
 		
@@ -71,6 +70,7 @@ package scxml {
 		public function interpret(document : SCXMLDocument, optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
 			doc = document;
 			dm = doc.dataModel;
+			dm["_sessionid"] = "sessionid_" + (Date.parse(new Date().toString()) + new Date().milliseconds);
 			
 			dm["_parent"] = optionalParentExternalQueue;
 			invId = invokeId;
@@ -78,13 +78,11 @@ package scxml {
 			var transition : Transition = new Transition(doc.mainState);
 			transition.target = doc.mainState.initial;
 
-			executeTransitionContent([transition]);
-			enterStates([transition]);
+//			executeTransitionContent([transition]);
+//			enterStates([transition]);
+			microstep([transition]);
 			
 			startEventLoop();
-		}
-		
-		protected function onAppFinalState() : void {
 		}
 		
 		private function startEventLoop() : void {
@@ -108,7 +106,8 @@ package scxml {
 			var timer : Timer = new Timer(0, 1);
 			timer.addEventListener(TimerEvent.TIMER, function(evt : Event) : void {mainEventLoop()});
 				
-			if(!externalQueue.isEmpty()) timer.start();
+			if(!externalQueue.isEmpty()) 
+				timer.start();
 		}
 		
 		
@@ -146,7 +145,7 @@ package scxml {
 				for each(var s : IState in configuration) {
 					for each(var i : Invoke in s.invoke) {
                         if(i.invokeid == externalEvent.invokeid) {  // event is the result of an <invoke> in this state
-                            applyFinalize(i, externalEvent)
+                            applyFinalize(i, externalEvent);
 						}
 					}
 				}
@@ -176,12 +175,12 @@ package scxml {
 				}
 			}
 //			}
-			for each(var state : IState in statesToInvoke) {
-				for each(var inv : Invoke in state.invoke) {
-					invoke(inv, externalQueue);
-				}
-			}
-			statesToInvoke.clear();
+//			for each(var state : IState in statesToInvoke) {
+//				for each(var inv : Invoke in state.invoke) {
+//					invoke(inv, externalQueue);
+//				}
+//			}
+//			statesToInvoke.clear();
 			
 			if(!externalQueue.isEmpty())
 				mainEventLoop();
@@ -204,8 +203,10 @@ package scxml {
 	        if (inFinalState) {
 	            if (invId && dm["_parent"]) 
 	                dm["_parent"].enqueue(new InterpreterEvent(["done", "invoke", invId], {}))
-	            trace( "Exiting interpreter");
+	            trace( "Exiting interpreter", invId != null ? invId : "");
+				dispatchEvent(new SCXMLEvent(SCXMLEvent.FINAL_STATE_REACHED));
 			}
+			
 	    //        sendDoneEvent(???)
 		}
 		
@@ -235,9 +236,10 @@ package scxml {
 		    var atomicStates : Array = ArrayUtils.filter(isAtomicState, configuration);
 			
 			for each(var state : IState in atomicStates) {
-	            if(state.invokeid && state.invokeid == event.invokeid) {  // event is the result of an <invoke> in this state
-	                applyFinalize(state, event);
-				}
+	            
+//				if(state.invokeid && state.invokeid == event.invokeid) {  // event is the result of an <invoke> in this state
+//	                applyFinalize(state, event);
+//				}
 
 	            if(!isPreempted(state, enabledTransitions)) {
 	                var done : Boolean = false;
@@ -275,10 +277,17 @@ package scxml {
 		    exitStates(enabledTransitions);
 		    executeTransitionContent(enabledTransitions);
 		    enterStates(enabledTransitions);
-		    // Logging
 
+			for each(var state : IState in statesToInvoke) {
+				for each(var inv : Invoke in state.invoke) {
+					invoke(inv, externalQueue);
+				}
+			}
+			statesToInvoke.clear();
+			
+		    // Logging
 	    	var config : Array = ArrayUtils.mapProperty(configuration, "id");
-		    if(doLogging) {
+		    if(doLogging && config.length > 1) {
 			    trace("configuration: [" + config.slice(1).join(", ") + "]");
 		    }
 		    // TODO: revise this
@@ -344,8 +353,9 @@ package scxml {
 				}
 			}
 
-	        for each(var s1 : IState in statesToEnter)
+	        for each(var s1 : IState in statesToEnter) {
 	            statesToInvoke.add(s1);
+			}
 
 	        
 	        for each(var s2 : IState in statesToEnter.sort(enterOrder)) {
@@ -368,7 +378,6 @@ package scxml {
 	            if(isFinalState(s3) && isScxmlState(s3.parent)) {
 	                bContinue = false;
 					exitInterpreter();
-					onAppFinalState();
 				}
 		}
 		
@@ -543,8 +552,25 @@ package scxml {
 		        return documentOrder(s2,s1);
 		}
 		
-		public function invoke(inv : Invoke, extQ : Queue) : void {
-			// stub
+		private function invoke(inv : Invoke, extQ : Queue) : String {
+			trace("invoke", inv.invokeid);
+			dm["#" + inv.invokeid] = inv;
+			inv.start(extQ, inv.invokeid);
+			
+			return inv.invokeid;
+			
+			/*
+			switch(inv.type) {
+				case "scxml":
+//					var sm : SCXML = new SCXML();
+//					sm.source = new XML(inv.content);
+					break;
+				case "x-tts":
+					break;
+				case "x-asr":
+					break;
+			}
+			*/
 		}
 
 		public function applyFinalize(s : Object, event : InterpreterEvent) : void {
@@ -581,7 +607,8 @@ package scxml {
 		}
 		
 		private function cancelInvoke(inv : Invoke) : void {
-			throw new IllegalOperationError("cancelInvoke not yet implemented");
+//			dm["#" + inv.invokeid] = null;
+			trace("invoke cancelled");
 		}
 		
 		public function set root(container : IStateClient) : void {
@@ -595,6 +622,9 @@ package scxml {
 				if(doLogging)
 					trace("current viewstate: " + viewState);
 			}
+		}
+		public function isFinished() : Boolean {
+			return !bContinue;
 		}
 	}
 }
