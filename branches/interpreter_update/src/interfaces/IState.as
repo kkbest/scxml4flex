@@ -5,7 +5,6 @@ package interfaces {
 		function get n() : Number;
 		function get parent() : IState;
 		function get id() : String;
-		function get invokeid() : String;
 		
 		function get onexit() : Array;
 		function get onentry() : Array;
