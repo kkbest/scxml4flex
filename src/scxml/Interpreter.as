@@ -15,6 +15,7 @@ package scxml {
 	import mx.core.IStateClient;
 	
 	import scxml.events.InterpreterEvent;
+	import scxml.events.InvokeEvent;
 	import scxml.events.SCXMLEvent;
 	import scxml.invoke.Invoke;
 	import scxml.nodes.*;
@@ -341,7 +342,7 @@ package scxml {
 		    var statesToEnter : OrderedSet = new OrderedSet();
 		    var statesForDefaultEntry : OrderedSet = new OrderedSet();
 		    for each(var t : Transition in enabledTransitions) {
-		        if (t.target) {
+		        if(t.target) {
 		            var LCA : IState = findLCA([t.source].concat(getTargetStates(t.target)));
 					if(isParallelState(LCA)) {
 	                    for each(var child : IState in getChildStates(LCA))
@@ -354,6 +355,7 @@ package scxml {
 			}
 
 	        for each(var s1 : IState in statesToEnter) {
+				trace("adding invoke", s1);
 	            statesToInvoke.add(s1);
 			}
 
@@ -552,27 +554,28 @@ package scxml {
 		        return documentOrder(s2,s1);
 		}
 		
-		private function invoke(inv : Invoke, extQ : Queue) : String {
-			trace("invoke", inv.invokeid);
-			dm["#" + inv.invokeid] = inv;
+		private function invoke(inv : Invoke, extQ : Queue) : void {
+			trace("adding assign to dm", "#" + inv.invokeid);
+			dm[inv.invokeid] = inv;
+			inv.addEventListener(InvokeEvent.INIT, invokeListener);
+			inv.addEventListener(InvokeEvent.RESULT, invokeListener);
 			inv.start(extQ, inv.invokeid);
-			
-			return inv.invokeid;
-			
-			/*
-			switch(inv.type) {
-				case "scxml":
-//					var sm : SCXML = new SCXML();
-//					sm.source = new XML(inv.content);
-					break;
-				case "x-tts":
-					break;
-				case "x-asr":
-					break;
-			}
-			*/
 		}
 
+		private function invokeListener(event : InvokeEvent) : void {
+			var target : Invoke = Invoke(event.currentTarget);
+			trace("invokeListener", target.invokeid);
+			switch(event.type) {
+				case InvokeEvent.INIT:
+					send(["init", "invoke", target.invokeid]);
+					break;
+				case InvokeEvent.RESULT:
+					send(["result", "invoke", event.data.lastResult]);
+					break;
+				
+			}
+		}
+		
 		public function applyFinalize(s : Object, event : InterpreterEvent) : void {
 			// stub
 		}

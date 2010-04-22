@@ -1,26 +1,20 @@
 package scxml {
 	import abstract.GenericState;
 	
-	import flash.display.Loader;
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.external.ExternalInterface;
-	import flash.net.URLLoader;
-	import flash.net.URLRequest;
 	
 	import interfaces.IInterpreter;
-	import interfaces.IInvoke;
 	
 	import r1.deval.D;
 	
 	import scxml.error.SCXMLValidationError;
 	import scxml.invoke.Invoke;
+	import scxml.invoke.InvokeASR;
 	import scxml.invoke.InvokeSCXML;
 	import scxml.invoke.InvokeTTS;
 	import scxml.nodes.*;
-	
-	import util.UrlTools;
 	
 	
 	public class Compiler extends EventDispatcher {
@@ -93,13 +87,15 @@ package scxml {
 					case "invoke":
 						var invoke : Invoke;
 						
-						
-						switch(node.@type) {
+						switch(String(node.@type)) {
 							case "scxml":
 								invoke = new InvokeSCXML(node.@src);
 								break;
 							case "x-tts":
 								invoke = new InvokeTTS();
+								break;
+							case "x-asr":
+								invoke = new InvokeASR();
 								break;
 						}
 						
@@ -156,26 +152,27 @@ package scxml {
 
 						case "send":
 							var type : String = child.@type != null ? child.@type : "scxml";
-							function getParam() : Object {
-								var data : Object = {};
-								if(child.hasOwnProperty("param")) {
-									for each(var elem : XML in child.param)
-										data[child.@name] = evalExpr(child.@expr);
-								}
-								return data;
-							}
+							var data : Object = {};
+							
 							if(child.hasOwnProperty("@target") && String(child.@target).slice(0,1) == "#") {
-								switch(String(child.@target).split("_")[1]) {
+//								switch(String(child.@target).split("_")[1]) {
+								switch(type) {
+//									case "parent":
+//										throw new Error("send target 'scxml' and 'parent' currently not supported");
+//										break;
 									case "scxml":
-									case "parent":
-										throw new Error("send target 'scxml' and 'parent' currently not supported");
 										break;
-									case "invoke":
-										f = function(dm : Object) : void {
-											Invoke(dm[child.@target.split("_")[2]]).send(child.@event.split("."), child.@id, parseInt(child.@delay), getParam()); 
-										};
+									case "x-asr":
+										if(child.hasOwnProperty("content"))
+											data["grammar"] = child.content.toString().replace(/\n|\s\s+/g, "").replace(/;\s*/g, ";\n");
+										break;
+									case "x-tts":
 										break;
 								}
+								
+								f = function(dm : Object) : void {
+									Invoke(dm[String(child.@target).slice(1)]).send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data)); 
+								};
 							} else {
 								// default, i.e no target specified.
 								f = function(dm : Object) : void {
@@ -192,6 +189,14 @@ package scxml {
 	        	fArray.push(getFunction(child));
 			}
 	        return fArray;
+		}
+		
+		private function appendParam(child : XML, toObj : Object) : Object {
+			if(child.hasOwnProperty("param")) {
+				for each(var elem : XML in child.param)
+				toObj[String(child.@name)] = evalExpr(child.@expr);
+			}
+			return toObj;
 		}
 		
 		private function parseRoot(node : XML) : void {

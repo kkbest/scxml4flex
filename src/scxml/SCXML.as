@@ -1,8 +1,13 @@
 package scxml {
 	import datastructures.Queue;
+	
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	
 	import interfaces.IInterpreter;
+	
 	import mx.core.IStateClient;
+	
 	import scxml.events.SCXMLEvent;
 	
 	[Event(name="finalStateReached", type="scxml.events.SCXMLEvent")]
