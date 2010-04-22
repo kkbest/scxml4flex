@@ -1,17 +1,20 @@
 package scxml.invoke {
 	import datastructures.Queue;
+	
+	import flash.events.EventDispatcher;
+	
+	import scxml.events.InvokeEvent;
 
-	public class Invoke {
+	public class Invoke extends EventDispatcher {
 		
 		private var _invokeid : String;
 		private var _type : String;
 		
 		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null) : void {
-			
 		}
 		
 		public function start(optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
-			
+			dispatchEvent(new InvokeEvent(InvokeEvent.INIT));
 		}
 		
 		public function get invokeid():String

@@ -5,8 +5,6 @@ package scxml.invoke {
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	
-	import interfaces.IInvoke;
-	
 	import scxml.SCXML;
 	
 	public class InvokeSCXML extends Invoke {
@@ -21,7 +19,7 @@ package scxml.invoke {
 			
 			var loader : URLLoader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, function(event : Event) : void {
-				sm.source = URLLoader(event.currentTarget).data;
+				sm.source = XML(URLLoader(event.currentTarget).data);
 			});
 			loader.load(new URLRequest(src));
 			
@@ -33,6 +31,7 @@ package scxml.invoke {
 		
 		override public function start(optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
 			sm.start(optionalParentExternalQueue, invokeid);
+			super.start(optionalParentExternalQueue, invokeid);
 		} 
 		
 	}

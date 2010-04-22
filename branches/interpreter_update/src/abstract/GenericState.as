@@ -124,13 +124,6 @@ package abstract {
 			return invId;
 		}
 		
-//		public function set initExec(f : IExecutable) : void {
-//			initTransitionFunction = f;
-//		}
-//		public function get initExec() : IExecutable {
-//			return initTransitionFunction;
-//		}
-		
 		override public function setProperties(node : XML) : void {
 			if(!optionalProperties) throw new IllegalOperationError("optionalProperties is empty, this property must be overwritten.");
 			for each(var p : String in optionalProperties)
