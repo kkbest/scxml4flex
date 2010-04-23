@@ -1,6 +1,6 @@
 package scxml {
 	
-	import abstract.SCXMLNode;
+	import abstract.GenericState;
 	
 	import datastructures.OrderedSet;
 	import datastructures.Queue;
@@ -47,7 +47,7 @@ package scxml {
 		
 		private const doLogging : Boolean = true;
 		
-		private var invId : String;
+		public var invId : String;
 		
 		private var statesToInvoke : OrderedSet;
 		private var previousConfiguration : OrderedSet;
@@ -124,14 +124,6 @@ package scxml {
 		}
 		
 		private function mainEventLoop() : void {
-//	        while(bContinue) {
-
-//            for each(var state : IState in statesToInvoke) {
-//                for each(var inv : Invoke in state.invoke) {
-//                    invoke(inv, externalQueue);
-//				}
-//			}
-//            statesToInvoke.clear();
 			
 			macroStepEnabled = false;
 			
@@ -139,7 +131,7 @@ package scxml {
 
             var externalEvent : InterpreterEvent = externalQueue.dequeue() // this call blocks until an event is available
 
-            trace("external event found: " + externalEvent.name);
+            trace("external event found: " + externalEvent.name, "in interpreter:", invId);
 
             dm["_event"] = externalEvent;
             if(externalEvent.invokeid) {
@@ -175,13 +167,6 @@ package scxml {
 					}
 				}
 			}
-//			}
-//			for each(var state : IState in statesToInvoke) {
-//				for each(var inv : Invoke in state.invoke) {
-//					invoke(inv, externalQueue);
-//				}
-//			}
-//			statesToInvoke.clear();
 			
 			if(!externalQueue.isEmpty())
 				mainEventLoop();
@@ -355,7 +340,6 @@ package scxml {
 			}
 
 	        for each(var s1 : IState in statesToEnter) {
-				trace("adding invoke", s1);
 	            statesToInvoke.add(s1);
 			}
 
@@ -521,12 +505,12 @@ package scxml {
 		
 		
 		private function isAtomicState(s : IState) : Boolean {
-			return s is Final || (s is SCXMLNode && s.state.length + s.parallel.length + s.final.length == 0);
+			return s.state.length + s.parallel.length + s.final.length == 0;
 		}
 		
 		
 		private function isCompoundState(s : Object) : Boolean {
-		    return (s is SCXMLNode || s.state.length + s.parallel.length + s.final.length > 0);
+		    return s.state.length + s.parallel.length + s.final.length > 0;
 		}
 		
 		private function documentOrder(s1 : IState, s2 : IState) : Number {
@@ -555,49 +539,57 @@ package scxml {
 		}
 		
 		private function invoke(inv : Invoke, extQ : Queue) : void {
-			trace("adding assign to dm", "#" + inv.invokeid);
+			trace("starting invoke", inv);
 			dm[inv.invokeid] = inv;
 			inv.addEventListener(InvokeEvent.INIT, invokeListener);
-			inv.addEventListener(InvokeEvent.RESULT, invokeListener);
+			inv.addEventListener(InvokeEvent.SEND_RESULT, invokeListener);
+			inv.addEventListener(InvokeEvent.CANCEL, invokeListener);
 			inv.start(extQ, inv.invokeid);
 		}
 
 		private function invokeListener(event : InvokeEvent) : void {
 			var target : Invoke = Invoke(event.currentTarget);
-			trace("invokeListener", target.invokeid);
 			switch(event.type) {
 				case InvokeEvent.INIT:
-					send(["init", "invoke", target.invokeid]);
+					send(["init", "invoke", target.invokeid], null , NaN, event.data, target.invokeid);
 					break;
-				case InvokeEvent.RESULT:
-					send(["result", "invoke", event.data.lastResult]);
+				case InvokeEvent.SEND_RESULT:
+					var evt : Array = ["result", "invoke", target.invokeid];
+					if(event.data.lastResult)
+						evt.push(event.data.lastResult);
+					send(evt, null , NaN, event.data, target.invokeid);
+					break;
+				case InvokeEvent.CANCEL:
+					send(["cancel", "invoke", target.invokeid], null , NaN, {}, target.invokeid);
 					break;
 				
 			}
 		}
 		
-		public function applyFinalize(s : Object, event : InterpreterEvent) : void {
-			// stub
+		public function applyFinalize(invoke : Invoke, event : InterpreterEvent) : void {
+			invoke.finalize();
 		}
 
-		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null) : void {
+		
+		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, invokeid : String = null, toQueue : Queue = null) : void {
+			if(!toQueue) toQueue = externalQueue;
 			if(eventName is String) eventName = eventName.split(".");
 			if(!data) data = {};
 			if(!delay || delay == 0) {
-				sendFunction(eventName as Array, data);
+				toQueue.enqueue(new InterpreterEvent(eventName as Array, data, invokeid));
 				return;
 			}
 			var timer : Timer = new Timer(delay *1000, 1);
 			timer.addEventListener(TimerEvent.TIMER, function(evt : TimerEvent) : void {
-	        	sendFunction(eventName as Array, data);
+				toQueue.enqueue(new InterpreterEvent(eventName as Array, data, invokeid));
 	  		});
 	  		if(sendId) sendDict[sendId] = timer;
 	        timer.start();
 		}
 		
-		public function sendFunction(name : Array, data : Object) : void {
-			externalQueue.enqueue(new InterpreterEvent(name, data));
-		}
+//		public function sendFunction(name : Array, data : Object, invokeid : String = null) : void {
+//			externalQueue.enqueue(new InterpreterEvent(name, data, invokeid));
+//		}
 		
 		public function raiseFunction(event : Array) : void {
 			internalQueue.enqueue(new InterpreterEvent(event, {}));
@@ -611,7 +603,8 @@ package scxml {
 		
 		private function cancelInvoke(inv : Invoke) : void {
 //			dm["#" + inv.invokeid] = null;
-			trace("invoke cancelled");
+			trace("invoke cancelled", inv.invokeid);
+			inv.cancel();
 		}
 		
 		public function set root(container : IStateClient) : void {

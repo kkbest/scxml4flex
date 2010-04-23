@@ -10,11 +10,21 @@ package scxml.invoke {
 		private var _invokeid : String;
 		private var _type : String;
 		
-		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null) : void {
+		protected var _lastResult : Object;
+		
+		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, toQueue : Queue = null) : void {
 		}
 		
 		public function start(optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
 			dispatchEvent(new InvokeEvent(InvokeEvent.INIT));
+		}
+		
+		public function cancel() : void {
+			dispatchEvent(new InvokeEvent(InvokeEvent.CANCEL));
+		}
+		
+		public function finalize() : void {
+			trace("finalize()", this);
 		}
 		
 		public function get invokeid():String
@@ -35,6 +45,12 @@ package scxml.invoke {
 		public function set type(value:String):void
 		{
 			_type = value;
+		}
+		
+		public function get lastResult():Object
+		{
+			trace("you got last result", _lastResult);
+			return _lastResult;
 		}
 	}
 }

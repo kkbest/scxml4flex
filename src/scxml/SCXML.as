@@ -43,8 +43,8 @@ package scxml {
 //			return config[config.length-1]["id"];
 //		}
 		
-		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null) : void {
-			interpreter.send(eventName, sendId, delay, data);
+		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, invokeid : String = null, toQueue : Queue = null) : void {
+			interpreter.send(eventName, sendId, delay, data, invokeid, toQueue);
 		}
 		
 		public function set root(container : IStateClient) : void {

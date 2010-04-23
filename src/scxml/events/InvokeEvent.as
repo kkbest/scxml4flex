@@ -4,7 +4,9 @@ package scxml.events {
 	public class InvokeEvent extends Event {
 		
 		public static var INIT : String = "init";
-		public static var RESULT : String = "result";
+		public static var SEND_RESULT : String = "send_result";
+		public static var CANCEL : String = "cancel";
+		
 		
 		public var data : Object;
 		

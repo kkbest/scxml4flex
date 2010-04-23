@@ -1,4 +1,6 @@
 package scxml.invoke {
+	import datastructures.Queue;
+	
 	import flash.events.Event;
 	import flash.external.ExternalInterface;
 	
@@ -6,15 +8,15 @@ package scxml.invoke {
 
 	public class InvokeASR extends Invoke {
 		
-		private var _lastResult : String = "";
 		
 		public function InvokeASR() {
+			trace('init InvokeASR');
 			ExternalInterface.addCallback("as_onResult", onResult);
 			ExternalInterface.call("loadWami");
 			
 		}
 		
-		override public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null) : void {
+		override public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, toQueue : Queue = null) : void {
 			trace("asr send", data["grammar"]);
 			ExternalInterface.call("wamiApp.setGrammar", {"language" : "en-us", "grammar" : data["grammar"]});
 			ExternalInterface.call("wamiApp.startRecording");
@@ -23,15 +25,8 @@ package scxml.invoke {
 		public function onResult(result : Object) : void {
 			trace("you said:", result.hyps[0].text);
 			_lastResult = result.hyps[0].text;
-			dispatchEvent(new InvokeEvent(InvokeEvent.RESULT, {"lastResult" : _lastResult}));
+			dispatchEvent(new InvokeEvent(InvokeEvent.SEND_RESULT, {"lastResult" : _lastResult}));
 		}
 
-		public function get lastResult():String
-		{
-			trace("you got last result", _lastResult);
-			return _lastResult;
-		}
-		
-		
 	}
 }

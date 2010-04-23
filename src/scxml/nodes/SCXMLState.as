@@ -10,7 +10,7 @@ package scxml.nodes {
 		
 		public function SCXMLState(sId : String, pState : IState, num : Number = NaN) { 
 			super(sId, pState, num); 
-			optionalProperties = ["viewstate", "initial"];
+			optionalProperties = ["viewstate"];
 		}
 		
 		public function set viewstate(id : String) : void {
@@ -20,6 +20,12 @@ package scxml.nodes {
 		}
 		override public function get viewstate() : String {
 			return flexViewState;
+		}
+		
+		override public function get initial():Initial {
+			if(!super.initial.length > 0) 
+				initial = new Initial([this.stateArray[0].id]);
+			return super.initial;
 		}
 		
 		public function toString() : String {

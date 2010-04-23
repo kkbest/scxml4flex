@@ -16,6 +16,8 @@ package scxml {
 	import scxml.invoke.InvokeTTS;
 	import scxml.nodes.*;
 	
+	import util.ArrayUtils;
+	
 	
 	public class Compiler extends EventDispatcher {
 		private var doc : SCXMLDocument;
@@ -35,12 +37,21 @@ package scxml {
             return node.@id; 
 		}
 		
+		private function descendantOf(node : XML, descTag : String) : Boolean {
+			if(!node.parent()) return false;
+			if(String(node.parent().name()) == descTag) 
+				return true;
+			return descendantOf(node.parent(), descTag);
+		} 
+		
 		public function parse(xml : XML) : void {
 			doc = new SCXMLDocument();
 			parseRoot(xml);
 			var descendants : XMLList = xml.descendants();
 			for(var i : int = 0; i< descendants.length(); i++) {
 				var node : XML = descendants[i];
+				if(descendantOf(node, "content")) 
+					continue;
 				var nodeName : String = String(node.name());
 				var pId : String = node.parent().@id;
 				var parentState : GenericState = doc.getState(pId);
@@ -48,13 +59,14 @@ package scxml {
 					case "state":
 						var newState : GenericState = doc.pushState(new SCXMLState(get_sid(node), parentState, i));
 						newState.setProperties(node);
+						if(isCompoundState(node))
+							newState.initial = parseInitial(node);
 						break;
 					case "transition":	
 						if(String(node.parent().name()) != "initial") {
 							var transition : Transition = parseTransition(node, parentState, i);
 							parentState.addTransition(transition);
-						} else 
-							doc.getState(node.parent().parent().@id).initial = node.@target.split(" ");
+						} 
 						break;
 					case "final":
 						doc.pushState(new Final(get_sid(node), parentState, i));
@@ -65,31 +77,38 @@ package scxml {
 						break;
 					case "parallel":
 						var parallelState : GenericState = doc.pushState(new Parallel(get_sid(node), parentState, i));
-						parallelState.setProperties(node);
+//						parallelState.setProperties(node);
 						break;
 					case "onentry":
-						var onEntry : Exec = new Exec(makeExecContent(node, i));
+						var onEntry : Exec = new Exec(makeExecContent(node));
 						parentState.addOnEntry(onEntry);
 						break;
 					case "onexit":
-						var onExit : Exec = new Exec(makeExecContent(node, i));
+						var onExit : Exec = new Exec(makeExecContent(node));
 						parentState.addOnExit(onExit);
 						break;
 					case "data":
 						doc.dataModel[String(node.@id)] = evalExpr(node.@expr);
 						break;
-					case "initial":
-						var transitionNode : XML = node.children()[0];
-						parentState.initial = new Initial(transitionNode.@target.split(" "));
-						
-						parentState.initial.setExecFunctions(makeExecContent(transitionNode, i));
-						break;
+//					case "initial":
+//						var transitionNode : XML = node.children()[0];
+//						parentState.initial = new Initial(transitionNode.@target.split(" "));
+//						
+//						parentState.initial.setExecFunctions(makeExecContent(transitionNode, i));
+//						break;
 					case "invoke":
 						var invoke : Invoke;
-						
+						trace("parsing invoke");
 						switch(String(node.@type)) {
 							case "scxml":
-								invoke = new InvokeSCXML(node.@src);
+								var inv : InvokeSCXML =  new InvokeSCXML();
+								if(node.hasOwnProperty("@src"))
+									inv.loadFromSource(node.@src);
+								if(node.hasOwnProperty("content"))
+									inv.content = XML(node.content.scxml.toString());
+									
+								invoke = inv;
+								
 								break;
 							case "x-tts":
 								invoke = new InvokeTTS();
@@ -111,7 +130,7 @@ package scxml {
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
-		private function makeExecContent(node : XML, i : Number) : Array {
+		private function makeExecContent(node : XML) : Array {
 		    var fArray : Array = [];
 	        for each(var child : XML in node.children()) {
 	        	var nodeName : String = String(child.name());
@@ -155,35 +174,50 @@ package scxml {
 							var data : Object = {};
 							
 							if(child.hasOwnProperty("@target") && String(child.@target).slice(0,1) == "#") {
-//								switch(String(child.@target).split("_")[1]) {
-								switch(type) {
-//									case "parent":
-//										throw new Error("send target 'scxml' and 'parent' currently not supported");
-//										break;
-									case "scxml":
-										break;
-									case "x-asr":
-										if(child.hasOwnProperty("content"))
-											data["grammar"] = child.content.toString().replace(/\n|\s\s+/g, "").replace(/;\s*/g, ";\n");
-										break;
-									case "x-tts":
-										break;
+									
+									switch(type) {
+	//									case "parent":
+	//										throw new Error("send target 'scxml' and 'parent' currently not supported");
+	//										break;
+										case "scxml":
+											break;
+										case "x-asr":
+											if(child.hasOwnProperty("content"))
+												data["grammar"] = child.content.toString().replace(/\n|\s\s+/g, "").replace(/;\s*/g, ";\n");
+											break;
+										case "x-tts":
+											break;
+									}
+									
+									switch(String(child.@target).slice(1)) {
+										case "_parent":
+											f = function(dm : Object) : void {
+												interpreter.send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data), dm["_parent"]); 
+											};
+											
+											break;
+										default:
+											f = function(dm : Object) : void {
+												Invoke(dm[String(child.@target).slice(1)]).send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data)); 
+											};
+											
+											break;
+											
+									}
+									
+								} else {
+									// default, i.e no target specified.
+									f = function(dm : Object) : void {
+										interpreter.send(child.@event.split("."), child.@id, parseInt(child.@delay));
+									};
 								}
-								
-								f = function(dm : Object) : void {
-									Invoke(dm[String(child.@target).slice(1)]).send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data)); 
-								};
-							} else {
-								// default, i.e no target specified.
-								f = function(dm : Object) : void {
-									interpreter.send(child.@event.split("."), child.@id, parseInt(child.@delay));
-								};
+								break;
+		            		default:
+		            			throw new SCXMLValidationError("Parsing failed: a " + 
+		            				nodeName + " node may not be the child of a " + node.name() + " node.");
+								break;
 							}
-							break;
-	            		default:
-	            			throw new SCXMLValidationError("Parsing failed: a " + 
-	            				nodeName + " node may not be the child of a " + node.name() + " node.");
-		        	}
+		        	
 		        	return f;
 	        	};
 	        	fArray.push(getFunction(child));
@@ -194,7 +228,7 @@ package scxml {
 		private function appendParam(child : XML, toObj : Object) : Object {
 			if(child.hasOwnProperty("param")) {
 				for each(var elem : XML in child.param)
-				toObj[String(child.@name)] = evalExpr(child.@expr);
+					toObj[String(elem.@name)] = evalExpr(elem.@expr);
 			}
 			return toObj;
 		}
@@ -203,17 +237,40 @@ package scxml {
 			var main : MainState = new MainState("__main__", null, 0);
 			node.@id = "__main__";
 			main.setProperties(node);
-			
+			main.initial = parseInitial(node);
 			doc.mainState = main;
 		}
 		
 		private function parseTransition(node : XML, source : GenericState, i : Number) : Transition {
 			var t : Transition = new Transition(source);
-			t.setProperties(node);
-			t.setExecFunctions(makeExecContent(node, i));
+			t.setExecFunctions(makeExecContent(node));
 			if(node.hasOwnProperty("@cond"))
 				t.cond = getExprFunction(node.@cond);
+			if(node.hasOwnProperty("@target"))
+				t.target = String(node.@target).split(" ");
+			if(node.hasOwnProperty("@event"))
+				t.event = ArrayUtils.map(function(x : String) : Array {return x.replace(/(.*)\.\*$/, "$1").split(".")}, node.@event.split(" ")); 
+			
 			return t;
+		}
+		
+		private function isCompoundState(node : XML) : Boolean {
+			return node.hasOwnProperty("state") || node.hasOwnProperty("parallel") || node.hasOwnProperty("final");
+		}
+		
+		private function parseInitial(node : XML) : Initial {
+			var initial : Initial;
+			if(node.hasOwnProperty("@initial")) {
+				initial = new Initial(String(node.@initial).split(" "));
+			} else if(node.hasOwnProperty("initial")) {
+				var transitionNode : XML = node.children()[0];
+				initial = new Initial(String(transitionNode.@target).split(" "));
+				initial.setExecFunctions(makeExecContent(transitionNode));
+			} else {
+				initial = new Initial([]);
+			}
+			
+			return initial;
 		}
 		
 		private function getExprFunction(expr : String) : Function {
