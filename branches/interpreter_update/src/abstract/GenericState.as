@@ -8,8 +8,10 @@ package abstract {
 	import scxml.nodes.*;
 	
 	
-	public class GenericState extends SCXMLNode implements IState {
+	public class GenericState implements IState {
         
+		protected var optionalProperties : Array;
+		
         protected var onExitArray : Array;
         protected var onEntryArray : Array;
         
@@ -39,7 +41,6 @@ package abstract {
 			finalStates = [];
 			invokeArray = [];
 			historyArray = [];
-			initialStates = new Initial([]);
 			
 			parentState = pState;
 			this.sId = sId;
@@ -124,14 +125,11 @@ package abstract {
 			return invId;
 		}
 		
-		override public function setProperties(node : XML) : void {
+		public function setProperties(node : XML) : void {
 			if(!optionalProperties) throw new IllegalOperationError("optionalProperties is empty, this property must be overwritten.");
 			for each(var p : String in optionalProperties)
 				if(node.hasOwnProperty("@" + p))
-					if(p == "initial")
-						this[p] = new Initial(String(node.@[p]).split(" "));
-					else
-						this[p] = String(node.@[p]);
+					this[p] = String(node.@[p]);
 		}
 	}
 }
