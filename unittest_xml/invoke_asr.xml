@@ -14,7 +14,7 @@
 			</send>
 		</transition>
 		
-		<transition cond="dm['asr'].lastResult == 'go final'" target="f2" />
+		<transition event="result.invoke.asr.*" target="f2" />
 		
 	</state>
 	
