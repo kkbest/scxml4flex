@@ -98,7 +98,6 @@ package scxml {
 //						break;
 					case "invoke":
 						var invoke : Invoke;
-						trace("parsing invoke");
 						switch(String(node.@type)) {
 							case "scxml":
 								var inv : InvokeSCXML =  new InvokeSCXML();
@@ -145,7 +144,7 @@ package scxml {
             				};
 		            		break; 
 	            		case "assign":
-							var expression : String = child.@expr != null ? child.@expr : child.text;
+							var expression : String = child.@expr != null ? child.@expr : child.text.toString();
 	            			f = function(dm : Object) : void {dm[String(child.@location)] = evalExpr(expression)};
 	            			break;
 	        			case "raise":
@@ -192,7 +191,8 @@ package scxml {
 									switch(String(child.@target).slice(1)) {
 										case "_parent":
 											f = function(dm : Object) : void {
-												interpreter.send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data), dm["_parent"]); 
+//												trace("parent send", dm["_parent"], Interpreter(interpreter).invId);
+												interpreter.send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data), interpreter.invokeid, dm["_parent"]); 
 											};
 											
 											break;
