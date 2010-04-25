@@ -47,7 +47,7 @@ package scxml {
 		
 		private const doLogging : Boolean = true;
 		
-		public var invId : String;
+		private var invId : String;
 		
 		private var statesToInvoke : OrderedSet;
 		private var previousConfiguration : OrderedSet;
@@ -539,7 +539,7 @@ package scxml {
 		}
 		
 		private function invoke(inv : Invoke, extQ : Queue) : void {
-			trace("starting invoke", inv);
+//			trace("starting invoke", inv);
 			dm[inv.invokeid] = inv;
 			inv.addEventListener(InvokeEvent.INIT, invokeListener);
 			inv.addEventListener(InvokeEvent.SEND_RESULT, invokeListener);
@@ -605,6 +605,10 @@ package scxml {
 //			dm["#" + inv.invokeid] = null;
 			trace("invoke cancelled", inv.invokeid);
 			inv.cancel();
+		}
+		
+		public function get invokeid() : String {
+			return invId;
 		}
 		
 		public function set root(container : IStateClient) : void {

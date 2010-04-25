@@ -17,5 +17,6 @@ package interfaces {
 		function interpret(document : SCXMLDocument, optionalParentExternalQueue : Queue = null, invokeId : String = null) : void;
 		function isFinished() : Boolean;
 		function set root(container : IStateClient) : void;
+		function get invokeid() : String;
 	}
 }
