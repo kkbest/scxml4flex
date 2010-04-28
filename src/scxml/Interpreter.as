@@ -22,6 +22,9 @@ package scxml {
 	
 	import util.ArrayUtils;
 	
+	[Event(name="finalStateReached", type="scxml.events.SCXMLEvent")]
+	[Event(name="stateEntered", type="scxml.events.SCXMLEvent")]
+	
 	/** Given a document parsed as a <code>scmxml.SCXMLDocument</code>, 
 	 * this class will interpret that document. 
 	 * 
@@ -539,7 +542,7 @@ package scxml {
 		}
 		
 		private function invoke(inv : Invoke, extQ : Queue) : void {
-//			trace("starting invoke", inv);
+			trace("starting invoke", inv);
 			dm[inv.invokeid] = inv;
 			inv.addEventListener(InvokeEvent.INIT, invokeListener);
 			inv.addEventListener(InvokeEvent.SEND_RESULT, invokeListener);

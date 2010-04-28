@@ -12,7 +12,7 @@ package scxml {
 	
 	[Event(name="finalStateReached", type="scxml.events.SCXMLEvent")]
 	[Event(name="start", type="scxml.events.SCXMLEvent")]
-//	[Event(name="stateEntered", type="scxml.events.SCXMLEvent")]
+	[Event(name="stateEntered", type="scxml.events.SCXMLEvent")]
 	
 	[DefaultProperty("source")]
 	
@@ -25,6 +25,7 @@ package scxml {
 			super();
 			interpreter = new Interpreter();
 			interpreter.addEventListener(SCXMLEvent.FINAL_STATE_REACHED, onFinalStateReached);
+			interpreter.addEventListener(SCXMLEvent.STATE_ENTERED, onStateEntered);
 		}
 		
 		public function set source(xml : XML) : void {
@@ -56,6 +57,9 @@ package scxml {
 		}
 		private function onFinalStateReached(event : SCXMLEvent) : void {
 			dispatchEvent(new SCXMLEvent(SCXMLEvent.FINAL_STATE_REACHED));
+		}
+		private function onStateEntered(event : SCXMLEvent) : void {
+			dispatchEvent(event);
 		}
 	}
 }
