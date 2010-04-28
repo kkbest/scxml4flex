@@ -1,20 +1,21 @@
 package scxml.nodes {
 	import abstract.GenericState;
-	import abstract.SCXMLNode;
 	
 	import interfaces.IExecutable;
 	
-	public class Transition extends SCXMLNode implements IExecutable {
+	import util.ArrayUtils;
+	
+	public class Transition implements IExecutable {
 		
 		private var sourceState : GenericState;
 		private var targetArray : Array;
 		public var cond : Function;
-		public var event : String;
+		public var event : Array;
 		private var functions : Array;
 		
 		public function Transition(source : GenericState) {
 			sourceState = source;
-			optionalProperties = ["event", "target", "anchor"];
+			
 		}
 		
 		public function get source() : GenericState {
@@ -27,22 +28,12 @@ package scxml.nodes {
 			targetArray = a;
 		}
 		
-		override public function setProperties(node : XML) : void {
-			
-			for each(var p : String in optionalProperties)
-				if(node.hasOwnProperty("@" + p))
-					if(p == "target")
-						this[p] = String(node.@[p]).split(" ");
-					else
-						this[p] = String(node.@[p]);
-		}
-		
 		public function setExecFunctions(array : Array) : void {
 			functions = array;
 		}
-		public function executeContent(scope : Object, dataModel : Object) : void {
+		public function executeContent(dataModel : Object) : void {
 			for each(var f : Function in functions)
-				f(scope, dataModel);
+				f(dataModel);
 		}
 		
 		public function toString() : String {

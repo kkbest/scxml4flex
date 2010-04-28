@@ -10,9 +10,9 @@ package scxml.nodes
 			functions = f;
 		}
 		
-		public function executeContent(scope : Object, dataModel : Object) : void {
+		public function executeContent(dataModel : Object) : void {
 			for each(var f : Function in functions) {
-				f(scope, dataModel);
+				f(dataModel);
 			}
 		}
 		

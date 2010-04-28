@@ -4,12 +4,14 @@ package abstract {
 	import interfaces.IExecutable;
 	import interfaces.IState;
 	
-	import scxml.nodes.History;
-	import scxml.nodes.Transition;
+	import scxml.invoke.Invoke;
+	import scxml.nodes.*;
 	
 	
-	public class GenericState extends SCXMLNode implements IState {
+	public class GenericState implements IState {
         
+		protected var optionalProperties : Array;
+		
         protected var onExitArray : Array;
         protected var onEntryArray : Array;
         
@@ -17,13 +19,15 @@ package abstract {
         
         protected var sId : String;
         protected var nNum : Number;
+        protected var invId : String;
+		
         
-        protected var initialStates : Array; 
+        protected var initialStates : Initial; 
         protected var finalStates : Array;
         protected var historyArray : Array;
 		protected var transitionArray : Array;
-        protected var state : Array;
-        protected var parallel : Array;
+        protected var stateArray : Array;
+        protected var parallelArray : Array;
         protected var invokeArray : Array;
         
 //        protected var initTransitionFunction : IExecutable;
@@ -32,8 +36,8 @@ package abstract {
 			onEntryArray = [];
 			onExitArray = [];
 			transitionArray = [];
-			state = [];
-			parallel = [];
+			stateArray = [];
+			parallelArray = [];
 			finalStates = [];
 			invokeArray = [];
 			historyArray = [];
@@ -63,11 +67,21 @@ package abstract {
 		public function get invoke() : Array {
 			return invokeArray;
 		}
-		public function set initial(s : Array) : void {
+		
+		public function set initial(s : Initial) : void {
 			initialStates = s;
 		} 
-		public function get initial() : Array {
+		public function get initial() : Initial {
 			return initialStates;
+		}
+		public function get state() : Array {
+			return stateArray;
+		}
+		public function get final() : Array {
+			return finalStates;
+		}
+		public function get parallel() : Array {
+			return parallelArray;
 		}
 		
 		public function get onexit() : Array {
@@ -84,7 +98,7 @@ package abstract {
 		}
 		
 		public function getChildStates() : Array {
-			return [].concat(state, parallel, finalStates, historyArray);
+			return [].concat(stateArray, parallelArray, finalStates, historyArray);
 		}
 		public function addState(s : GenericState) : void {
 			//TODO: but what if the GenericState is a Parallel?
@@ -96,33 +110,26 @@ package abstract {
 		public function addHistory(s : History) : void {
 			historyArray.push(s);
 		}
-		
-		public function get isAtomicState() : Boolean {
-			return state.length == 0 && parallel.length == 0 && finalStates.length == 0;
-		}
-		public function get isCompoundState() : Boolean {
-			return (state.length > 0 || parallel.length > 0 || finalStates.length > 0);
+		public function addInvoke(inv : Invoke) : void {
+			invokeArray.push(inv);
 		}
 		
 		public function get viewstate() : String {
 			return null;
 		}
 		
-//		public function set initExec(f : IExecutable) : void {
-//			initTransitionFunction = f;
-//		}
-//		public function get initExec() : IExecutable {
-//			return initTransitionFunction;
-//		}
+		public function set invokeid(id : String) : void {
+			invId = id;
+		}
+		public function get invokeid() : String {
+			return invId;
+		}
 		
-		override public function setProperties(node : XML) : void {
+		public function setProperties(node : XML) : void {
 			if(!optionalProperties) throw new IllegalOperationError("optionalProperties is empty, this property must be overwritten.");
 			for each(var p : String in optionalProperties)
 				if(node.hasOwnProperty("@" + p))
-					if(p == "initial")
-						this[p] = String(node.@[p]).split(" ");
-					else
-						this[p] = String(node.@[p]);
+					this[p] = String(node.@[p]);
 		}
 	}
 }

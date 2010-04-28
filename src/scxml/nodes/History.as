@@ -7,7 +7,6 @@ package scxml.nodes {
 		public static var TYPE_SHALLOW : String = "shallow";
 		
 		private var _type : String = "shallow";
-		private var _id : String;
 		
 		public function History(sId : String, pState : IState, num : Number = NaN) { 
 			super(sId, pState, num);
@@ -18,6 +17,7 @@ package scxml.nodes {
 			return _type;
 		}
 		public function set type(s : String) : void {
+			trace("type", s);
 			_type = s;
 			if(_type != TYPE_SHALLOW || _type != TYPE_DEEP) 
 				throw new Error("History type must equal 'deep' or 'shallow'");
