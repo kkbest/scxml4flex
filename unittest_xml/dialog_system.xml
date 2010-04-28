@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <scxml initial="s1">
-	
 	<state id="s1">
 		<invoke id="tts" type="x-tts" />
 		<invoke id="asr" type="x-asr" />
@@ -61,7 +60,6 @@
 			<send type="x-tts" target="#tts">
 				<param name="say" expr="'The factorial of ' + dm['asr'].lastResult + ' is ' + dm['_event'].data.val" />
 			</send>
-			<raise event="restart" />
 		</transition>
 
 		<transition event="result.invoke.asr.quit" target="f2" />
