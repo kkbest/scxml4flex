@@ -1,59 +1,28 @@
 <scxml initial="red">
-                
-                <onentry>
-                    <log expr="scxml entry" />
-                </onentry>
-                
-                <transition event="quit" target="red">
-                    <log expr="hej" />
-                    <script><![CDATA[
-                        this.number = 5;
-                        trace(this.number);
-                    ]]></script>
-                </transition>
-                
-                <final id="f1">
-                    <onentry>
-                        <script><![CDATA[
-                        this.number = 9;
-                        trace(this.number);
-                    ]]></script>
-                    </onentry>
-                </final>
-                <state id="red" viewstate="viewstate1">
-                    <onentry>
-                        <log label="onenter" expr="red" />
-                    </onentry>
-                    <transition event="e1" target="green" />
-                        
-                </state>
-                <state id="green" viewstate="viewstate2">
-                    <transition event="e1" target="red"/>
-                </state>
-                <state id="blue" initial="subblue1">
-                    <onentry>
-                        <log label="blue" expr="entered" />
-                    </onentry>
-                    
-                    <state id="subblue1">
-                        <onentry>
-                            <log label="subblue1" expr="entered" />
-                            <script><![CDATA[
-                        this.number = 0;
-                        trace(this.number);
-                    ]]></script>
-                        </onentry>    
-                           <transition target="subblue2" />
-                    </state>
-                    <final id="subblue2">
-                        <onentry>
-                        <script><![CDATA[
-                        this.number = 3444;
-                        trace(this.number);
-                    ]]></script>
-                            <log label="subblue2" expr="entered" />
-                        </onentry>    
-                        
-                    </final>
-                </state>
-            </scxml> 
+	<final id="f1" />
+	
+	<state id="red">
+		<onentry>
+			<send event="e1" id="snd" delay="3" />
+			<cancel sendid="snd" />
+		</onentry>
+		<transition event="e1" target="green" />
+	</state>
+
+	<state id="green">
+		<onentry>
+			<raise event="e1" />
+		</onentry>
+		<transition event="e1" target="blue" />
+	</state>
+
+	<state id="blue" initial="subblue1">
+		<onentry>
+			<log expr="'logging!'" />
+		</onentry>
+		<state id="subblue1">
+			<transition target="f1" />
+		</state>
+
+	</state>
+</scxml> 

@@ -1,6 +1,11 @@
 package util {
 	public class ArrayUtils	{
 		
+		public static function member(elem : *, array : Array) : Boolean {
+			for each(var item : * in array)
+				if(item == elem) return true;
+			return false;
+		}
 		
 		public static function mapProperty(array : Array, prop : String) : Array {
 			return array.map(function(item:*, index:int, a:Array) : String {

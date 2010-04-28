@@ -11,11 +11,11 @@ package scxml.nodes {
 			super(sId, pState, num);
 		}
 		
-		override public function set initial(s : Array) : void {
+		override public function set initial(s : Initial) : void {
 			throw new SCXMLValidationError("Inital tag not allowed as child of Final");
 		} 
-		override public function get initial() : Array {
-			return null;
+		override public function get initial() : Initial {
+			return new Initial([]);
 		}
 		
 		override public function get transition() : Array {

@@ -11,7 +11,7 @@ package scxml {
 		public function SCXMLDocument()	{
 			states = {};
 			dataModel = {};
-			states["root"] = new SCXMLState("root", null);
+//			states["root"] = new SCXMLState("root", null);
 		}
 		public function pushState(s : GenericState) : GenericState {
 			states[s.id] = s;
@@ -37,10 +37,11 @@ package scxml {
 			return output;
 		}
 		public function set mainState(s : MainState) : void {
+			states[s.id] = s;
 			rootState = s;
 		}
 		public function get mainState() : MainState {
-			return rootState;
+			return MainState(getState("__main__"));
 		}
 		public function toString() : String {
 			return "SCXMLDocument";
