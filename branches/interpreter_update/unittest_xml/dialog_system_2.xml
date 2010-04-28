@@ -1,6 +1,16 @@
 <?xml version="1.0"?>
 <scxml initial="root">
-	<state id="root>
+
+	<datamodel>
+		<data id="grammar">
+		<![CDATA[
+		#JSGF V1.0;
+		grammar factorial;
+		public <top> = quit | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+		]]>	
+		</data>
+	</datamodel>
+	<state id="root">
 		<invoke id="tts" type="x-tts" />
 		<invoke id="asr" type="x-asr" />
 		<invoke id="fac" type="scxml">
@@ -15,7 +25,7 @@
 							<assign location="fac" expr="1" />
 						</onentry>
 						<transition event="calc" target="loop">
-							<assign location="x" expr="parseInt(dm['_event'].data.val)" />
+							<assign location="x" expr="dm['_event'].data.val" />
 						</transition>
 					</state>
 					  
@@ -34,50 +44,50 @@
 				</scxml>
 			</content>
 		</invoke>
-			
-		<transition event="init.invoke.tts restart" target="query" />
+
+		<transition event="init.invoke.tts">
+			<log label="testing" />
+		</transition>
+		
+		<state id="init">
+			<transition event="init.invoke.tts" target="query" />
+		</state>
+		
 		
 		<state id="query">
 			<onentry>
 				<send type="x-tts" target="#tts" >
 					<param name="say" expr="'Welcome. Please say a number between one and nine.'" />
-				</send> 
+				</send>
 			</onentry>
 			
 			<transition event="result.invoke.tts">
 				<send type="x-asr" target="#asr">
-					<content>
-					<![CDATA[
-						#JSGF V1.0;
-						grammar factorial;
-						public <top> = quit | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-					]]>	
-					</content>
+					<param name="grammar" expr="dm['grammar']" />
 				</send>
 			</transition>
 			
-			<transition event="calc_result" >
-				<log name="result" expr="_event.data.val" />
-				<send type="x-tts" target="#tts">
-					<param name="say" expr="'The factorial of ' + dm['asr'].lastResult + ' is ' + dm['_event'].data.val" />
-				</send>
-				<raise event="restart" />
-			</transition>
-	
 			<transition event="result.invoke.asr.quit" target="f2" />
 			
-			
-			<transition event="result.invoke.asr.*" target="report_result" />
-			
+			<transition event="result.invoke.asr.*">
+				<send event="calc" target="#fac">
+					<param name="val" expr="parseInt(dm['asr'].lastResult)" />
+				</send>
+			</transition>
+
+			<transition event="calc_result" target="report_result" />
 		</state>
 		
 		<state id="report_result">
 			<onentry>
-				<log label="asr result" expr="dm['asr'].lastResult" />
-				<send event="calc" target="#fac">
-					<param name="val" expr="dm['asr'].lastResult" />
+				<log label="fac result" expr="dm['_event'].data.val" />
+				<send type="x-tts" target="#tts">
+					<param name="say" expr="'The factorial of ' + dm['asr'].lastResult + ' is ' + dm['_event'].data.val + '. Please say another number.'" />
 				</send>
 			</onentry>
+			
+			<transition event="result.invoke.tts" target="query" /> 
+			
 		</state>
 	
 	</state>
