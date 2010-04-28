@@ -88,7 +88,6 @@ package scxml {
 						parentState.addOnExit(onExit);
 						break;
 					case "data":
-						trace("data", node.toString());
 						if(node.hasOwnProperty("@expr"))
 							doc.dataModel[String(node.@id)] = evalExpr(node.@expr);
 						else
@@ -96,12 +95,6 @@ package scxml {
 							
 						
 						break;
-//					case "initial":
-//						var transitionNode : XML = node.children()[0];
-//						parentState.initial = new Initial(transitionNode.@target.split(" "));
-//						
-//						parentState.initial.setExecFunctions(makeExecContent(transitionNode, i));
-//						break;
 					case "invoke":
 						var invoke : Invoke;
 						switch(String(node.@type)) {
@@ -126,7 +119,8 @@ package scxml {
 						invoke.invokeid = node.@id;
 						invoke.type = node.@type;
 						parentState.addInvoke(invoke);
-						
+						if(node.hasOwnProperty("finalize"))
+							invoke.finalizeArray = makeExecContent(XML(node.finalize));
 						break;
 					
 				}
@@ -145,35 +139,28 @@ package scxml {
 		            switch(nodeName) {
 		            	case "log":
 		            		var label : String = child.hasOwnProperty("@label") ? child.@label + ": " : "Log: ";
-	            			f = function(dm : Object) : void {
+	            			f = function() : void {
 	            				trace(label + evalExpr(child.@expr));
             				};
 		            		break; 
 	            		case "assign":
 							var expression : String = child.@expr != null ? child.@expr : child.text.toString();
-	            			f = function(dm : Object) : void {dm[String(child.@location)] = evalExpr(expression)};
+	            			f = function() : void {doc.dataModel[String(child.@location)] = evalExpr(expression)};
 	            			break;
 	        			case "raise":
-	        				f = function(dm : Object) : void {interpreter.raiseFunction(child.@event.split("."))};
-	        				f["data"] = child.@id;
+	        				f = function() : void {interpreter.raiseFunction(child.@event.split("."))};
 	        				break;
 	    				case "script":
-							throw new Error("Script not implemented");
+							var code : String = child.toString();
+	        				f = function() : void {
+								evalExpr(code);
+							};
 	    					break;
 						case "cancel":
-							f = function(dm : Object) : void {interpreter.cancelEvent(child.@sendid)};
+							f = function() : void {interpreter.cancelEvent(child.@sendid)};
 							break;
 						case "param" :
-							if(!child.hasOwnProperty("@expr") || child.parent.name() != "transition") 
-								throw new IllegalOperationError("param can currently only be a child of transition and send elements");
-							f = function(dm : Object) : void {
-//								TODO: this is a simplification, read the standard.
-								var n : String = child.@name;
-								var e : String = child.@expr;
-								dm._event.data[n] =  e;
-							};
-							break;
-
+							throw new Error("param can currently only be the child of the send tag");
 						case "send":
 							var type : String = child.@type != null ? child.@type : "scxml";
 							var data : Object = {};
@@ -181,9 +168,6 @@ package scxml {
 							if(child.hasOwnProperty("@target") && String(child.@target).slice(0,1) == "#") {
 									
 									switch(type) {
-	//									case "parent":
-	//										throw new Error("send target 'scxml' and 'parent' currently not supported");
-	//										break;
 										case "scxml":
 											break;
 										case "x-asr":
@@ -196,27 +180,27 @@ package scxml {
 									
 									switch(String(child.@target).slice(1)) {
 										case "_parent":
-											f = function(dm : Object) : void {
+											f = function() : void {
 //												trace("parent send", dm["_parent"], Interpreter(interpreter).invId);
-												interpreter.send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data), interpreter.invokeid, dm["_parent"]); 
+												interpreter.send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data), interpreter.invokeid, doc.dataModel["_parent"]); 
 											};
 											
 											break;
 										default:
-											f = function(dm : Object) : void {
-												Invoke(dm[String(child.@target).slice(1)]).send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data)); 
+											f = function() : void {
+												Invoke(doc.dataModel[String(child.@target).slice(1)]).send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data)); 
 											};
 											
 											break;
 											
 									}
 									
-								} else {
-									// default, i.e no target specified.
-									f = function(dm : Object) : void {
-										interpreter.send(child.@event.split("."), child.@id, parseInt(child.@delay));
-									};
-								}
+							} else {
+								// default, i.e no target specified.
+								f = function() : void {
+									interpreter.send(child.@event.split("."), child.@id, parseInt(child.@delay));
+								};
+							}
 								break;
 		            		default:
 		            			throw new SCXMLValidationError("Parsing failed: a " + 
@@ -280,22 +264,23 @@ package scxml {
 				var transitionNode : XML = node.children()[0];
 				initial = new Initial(String(transitionNode.@target).split(" "));
 				initial.setExecFunctions(makeExecContent(transitionNode));
-			} else {
-				initial = new Initial([]);
+			} else { // has neither initial tag or attribute, so we'll make the first valid state a target instead.
+				var childNodes : XMLList = node.children().(ArrayUtils.member(name(), ["state", "parallel", "final"]));
+				initial = new Initial([String(childNodes[0].@id)]);
 			}
 			
 			return initial;
 		}
 		
 		private function getExprFunction(expr : String) : Function {
-			function f(dm : Object) : * {
-				return D.eval(expr, {"dm" : dm}); 
+			function f() : * {
+				return D.eval(expr, doc.dataModel); 
 			}
 			return f;
 		}
 		
 		private function evalExpr(expr : String) : * {
-			return D.eval(expr, {"dm" : doc.dataModel});
+			return D.eval(expr, doc.dataModel);
 		}
 		
 		public function get document() : SCXMLDocument {

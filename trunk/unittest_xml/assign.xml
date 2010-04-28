@@ -4,11 +4,13 @@
 	</datamodel>  
 	<state id="s1">
 		<onentry>
-			<assign location="x" expr="dm['x']+1"/>
-			<log expr="dm['x']" />
+			<script>
+				x = x + 5;
+			</script>
+			<log expr="x" />
 		</onentry>
-        <transition cond="dm['x'] &gt; 1" target="result">
-			<log label="Result" expr="dm['x']"/>
+        <transition cond="x &gt; 1" target="result">
+			<log label="Result" expr="x"/>
 		</transition>
     </state>
    <final id="result"/>

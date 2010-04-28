@@ -323,7 +323,7 @@ package scxml {
 		
 		private function executeContent(obj : IExecutable) : void {
 			if(obj.executeContent != null)
-				obj.executeContent(dm)
+				obj.executeContent();
 		}
 		
 		private function enterStates(enabledTransitions : Array) : void {
@@ -485,7 +485,7 @@ package scxml {
 		    if (t.cond == null)
 		        return true;
 		    else
-		        return t.cond(dm) as Boolean;
+		        return t.cond() as Boolean;
 		}
 		
 		private function isParallelState(s : IState) : Boolean {
@@ -542,7 +542,7 @@ package scxml {
 		}
 		
 		private function invoke(inv : Invoke, extQ : Queue) : void {
-			trace("starting invoke", inv);
+//			trace("starting invoke", inv);
 			dm[inv.invokeid] = inv;
 			inv.addEventListener(InvokeEvent.INIT, invokeListener);
 			inv.addEventListener(InvokeEvent.SEND_RESULT, invokeListener);
