@@ -88,7 +88,13 @@ package scxml {
 						parentState.addOnExit(onExit);
 						break;
 					case "data":
-						doc.dataModel[String(node.@id)] = evalExpr(node.@expr);
+						trace("data", node.toString());
+						if(node.hasOwnProperty("@expr"))
+							doc.dataModel[String(node.@id)] = evalExpr(node.@expr);
+						else
+							doc.dataModel[String(node.@id)] = node.toString();
+							
+						
 						break;
 //					case "initial":
 //						var transitionNode : XML = node.children()[0];
@@ -182,7 +188,7 @@ package scxml {
 											break;
 										case "x-asr":
 											if(child.hasOwnProperty("content"))
-												data["grammar"] = child.content.toString().replace(/\n|\s\s+/g, "").replace(/;\s*/g, ";\n");
+												data["grammar"] = grammarCleanup(child.content.toString());
 											break;
 										case "x-tts":
 											break;
@@ -225,10 +231,18 @@ package scxml {
 	        return fArray;
 		}
 		
+		private function grammarCleanup(input : String) : String {
+			return input.replace(/\n|\s\s+/g, "").replace(/;\s*/g, ";\n");
+		}
+		
 		private function appendParam(child : XML, toObj : Object) : Object {
 			if(child.hasOwnProperty("param")) {
-				for each(var elem : XML in child.param)
-					toObj[String(elem.@name)] = evalExpr(elem.@expr);
+				for each(var elem : XML in child.param) {
+					if(elem.@name == "grammar")
+						toObj[String(elem.@name)] = grammarCleanup(evalExpr(elem.@expr));
+					else
+						toObj[String(elem.@name)] = evalExpr(elem.@expr);
+				}
 			}
 			return toObj;
 		}

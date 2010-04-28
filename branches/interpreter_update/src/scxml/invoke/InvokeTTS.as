@@ -5,6 +5,9 @@ package scxml.invoke {
 	import datastructures.Queue;
 	
 	import flash.events.Event;
+	import flash.media.Sound;
+	import flash.media.SoundChannel;
+	import flash.net.SharedObject;
 	
 	import scxml.events.InvokeEvent;
 	
@@ -15,8 +18,10 @@ package scxml.invoke {
 		private var _invokeid : String;
 		private var _type : String;
 		
+		private var staticMsgs : SharedObject;
 		
 		private var vaas : BasicVaas;
+		private var toSay : String;
 		
 		public function InvokeTTS()	{
 			setupVaas();
@@ -31,15 +36,19 @@ package scxml.invoke {
 			vaas.addEventListener(BasicVaas.MESSAGE_AVAILABLE, onVoice);
 			vaas.addEventListener(BasicVaas.ERROR, onVaasError);
 			
+			staticMsgs = SharedObject.getLocal("vaas");
+			
 		}
 		
 		private function onVoice(event:Event) : void {
 			var target : BasicVaas = BasicVaas(event.target);
 			_lastResult = target.requestedSound;
 			target.requestedSound.play().addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
+			staticMsgs.setProperty(toSay, vaas.requestedId);
 		}
 		
 		private function onPlaybackComplete(event : Event) : void {
+			SoundChannel(event.currentTarget).removeEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
 			dispatchEvent(new InvokeEvent(InvokeEvent.SEND_RESULT, {"lastResult" : _lastResult}));
 		}
 		
@@ -51,7 +60,12 @@ package scxml.invoke {
 			trace("tts send");
 			for(var i : String in data)
 				trace(i, data[i]);
-			vaas.generateMessage("peter22k", data["say"]);
+			toSay = data["say"];
+			if(staticMsgs.data[toSay] != null)
+				vaas.retrieveMessage(staticMsgs.data[toSay]);
+			else
+				vaas.generateMessage("peter22k", data["say"]);
+			
 		}
 		
 	}
