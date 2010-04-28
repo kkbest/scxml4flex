@@ -11,6 +11,8 @@ package scxml.invoke {
 		private var _type : String;
 		
 		protected var _lastResult : Object;
+		private var _finalizeArray : Array;
+		
 		
 		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, toQueue : Queue = null) : void {
 		}
@@ -21,10 +23,6 @@ package scxml.invoke {
 		
 		public function cancel() : void {
 			dispatchEvent(new InvokeEvent(InvokeEvent.CANCEL));
-		}
-		
-		public function finalize() : void {
-			trace("finalize()", this);
 		}
 		
 		public function get invokeid():String
@@ -49,8 +47,19 @@ package scxml.invoke {
 		
 		public function get lastResult():Object
 		{
-			trace("you got last result", _lastResult);
 			return _lastResult;
 		}
+		
+		public function finalize(): void
+		{
+			for each(var func : Function in _finalizeArray)
+				func();
+		}
+		
+		public function set finalizeArray(value:Array):void
+		{
+			_finalizeArray = value;
+		}
+		
 	}
 }

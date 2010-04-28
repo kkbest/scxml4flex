@@ -10,14 +10,12 @@ package scxml.invoke {
 		
 		
 		public function InvokeASR() {
-			trace('init InvokeASR');
 			ExternalInterface.addCallback("as_onResult", onResult);
 			ExternalInterface.call("loadWami");
 			
 		}
 		
 		override public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, toQueue : Queue = null) : void {
-			trace("asr send", data["grammar"]);
 			ExternalInterface.call("wamiApp.setGrammar", {"language" : "en-us", "grammar" : data["grammar"]});
 			ExternalInterface.call("wamiApp.startRecording");
 		}
