@@ -74,6 +74,7 @@ package scxml {
 		public function interpret(document : SCXMLDocument, optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
 			doc = document;
 			dm = doc.dataModel;
+			dm["In"] = In;
 			dm["_sessionid"] = "sessionid_" + (Date.parse(new Date().toString()) + new Date().milliseconds);
 			
 			dm["_parent"] = optionalParentExternalQueue;
@@ -628,6 +629,11 @@ package scxml {
 		}
 		public function isFinished() : Boolean {
 			return !bContinue;
+		}
+		
+		public function In(sId : String) : Boolean {
+			var config : Array = ArrayUtils.mapProperty(configuration, "id");
+			return ArrayUtils.member(sId, config);
 		}
 	}
 }
