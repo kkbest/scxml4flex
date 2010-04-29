@@ -6,6 +6,7 @@ package scxml.events {
 		public static var INIT : String = "init";
 		public static var SEND_RESULT : String = "send_result";
 		public static var CANCEL : String = "cancel";
+		public static var ABORT : String = "abort";
 		
 		
 		public var data : Object;

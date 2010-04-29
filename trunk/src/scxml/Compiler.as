@@ -228,6 +228,12 @@ package scxml {
 						toObj[String(elem.@name)] = evalExpr(elem.@expr);
 				}
 			}
+			
+			if(child.hasOwnProperty("@namelist")) {
+				for each(var name : String in String(child.@namelist).split(" "))
+					toObj[name] = evalExpr(name);
+			}
+			
 			return toObj;
 		}
 		

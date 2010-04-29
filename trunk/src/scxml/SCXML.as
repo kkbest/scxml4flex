@@ -22,15 +22,12 @@ package scxml {
 		private var interpreter : IInterpreter;
 		
 		public function SCXML() {
-			super();
 			interpreter = new Interpreter();
 			interpreter.addEventListener(SCXMLEvent.FINAL_STATE_REACHED, onFinalStateReached);
 			interpreter.addEventListener(SCXMLEvent.STATE_ENTERED, onStateEntered);
 		}
 		
 		public function set source(xml : XML) : void {
-			if(xml is String) { //TODO: make this work.
-			}
 			compiler = new Compiler(interpreter);  
 			
 			compiler.parse(xml);
@@ -39,10 +36,6 @@ package scxml {
 			interpreter.interpret(compiler.document, optionalParentExternalQueue, invokeId);
 			dispatchEvent(new SCXMLEvent(SCXMLEvent.START));
 		}
-//		public function get currentState() : String {
-//			var config : Array = configuration.toList();
-//			return config[config.length-1]["id"];
-//		}
 		
 		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, invokeid : String = null, toQueue : Queue = null) : void {
 			interpreter.send(eventName, sendId, delay, data, invokeid, toQueue);
