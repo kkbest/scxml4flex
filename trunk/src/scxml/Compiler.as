@@ -267,7 +267,7 @@ package scxml {
 			if(node.hasOwnProperty("@initial")) {
 				initial = new Initial(String(node.@initial).split(" "));
 			} else if(node.hasOwnProperty("initial")) {
-				var transitionNode : XML = node.children()[0];
+				var transitionNode : XML = XML(node.initial).children()[0];
 				initial = new Initial(String(transitionNode.@target).split(" "));
 				initial.setExecFunctions(makeExecContent(transitionNode));
 			} else { // has neither initial tag or attribute, so we'll make the first valid state a target instead.
