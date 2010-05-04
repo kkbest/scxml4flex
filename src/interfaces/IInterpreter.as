@@ -18,5 +18,6 @@ package interfaces {
 		function isFinished() : Boolean;
 		function set root(container : IStateClient) : void;
 		function get invokeid() : String;
+		function get dataModel() : Object;
 	}
 }

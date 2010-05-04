@@ -54,5 +54,9 @@ package scxml {
 		private function onStateEntered(event : SCXMLEvent) : void {
 			dispatchEvent(event);
 		}
+		
+		public function get dataModel() : Object {
+			return interpreter.dataModel;
+		}
 	}
 }

@@ -133,9 +133,10 @@ package scxml {
 			
             previousConfiguration = configuration;
 
-            var externalEvent : InterpreterEvent = externalQueue.dequeue() // this call blocks until an event is available
-
-            trace("external event found: " + externalEvent.name, "in interpreter:", invId);
+            var externalEvent : InterpreterEvent = externalQueue.dequeue(); 
+			
+			var suffix : String = invId != null ? "in interpreter: " + invId : "";
+            trace("external event found: " + externalEvent.name, suffix);
 
             dm["_event"] = externalEvent;
             if(externalEvent.invokeid) {
@@ -227,16 +228,12 @@ package scxml {
 			
 			for each(var state : IState in atomicStates) {
 	            
-//				if(state.invokeid && state.invokeid == event.invokeid) {  // event is the result of an <invoke> in this state
-//	                applyFinalize(state, event);
-//				}
-
 	            if(!isPreempted(state, enabledTransitions)) {
 	                var done : Boolean = false;
 	                for each(var s : IState in [state].concat(getProperAncestors(state, null))) {
 	                    if(done) break;
 	                    for each(var t : Transition in s.transition) {
-	                        if(t.event.length > 0 && nameMatch(t.event, event.name) && conditionMatch(t)) {
+	                        if(t.event && nameMatch(t.event, event.name) && conditionMatch(t)) {
 	                            enabledTransitions.add(t);
 	                            done = true;
 	                            break;
@@ -591,10 +588,6 @@ package scxml {
 	        timer.start();
 		}
 		
-//		public function sendFunction(name : Array, data : Object, invokeid : String = null) : void {
-//			externalQueue.enqueue(new InterpreterEvent(name, data, invokeid));
-//		}
-		
 		public function raiseFunction(event : Array) : void {
 			internalQueue.enqueue(new InterpreterEvent(event, {}));
 		}
@@ -634,6 +627,10 @@ package scxml {
 		public function In(sId : String) : Boolean {
 			var config : Array = ArrayUtils.mapProperty(configuration, "id");
 			return ArrayUtils.member(sId, config);
+		}
+		
+		public function get dataModel() : Object {
+			return dm;
 		}
 	}
 }
