@@ -22,9 +22,10 @@ package scxml.invoke {
 		
 		public function onResult(result : Object) : void {
 			trace("you said:", result.hyps[0].text);
+			ExternalInterface.call("console.log", result.hyps[0].aggregate.kvs);
 			ExternalInterface.call("wamiApp.stopRecording");
 			_lastResult = result.hyps[0].text;
-			dispatchEvent(new InvokeEvent(InvokeEvent.SEND_RESULT, {"lastResult" : _lastResult}));
+			dispatchEvent(new InvokeEvent(InvokeEvent.SEND_RESULT, {"lastResult" : _lastResult, "slotsFilled" : result.hyps[0].aggregate.kvs}));
 		}
 
 	}

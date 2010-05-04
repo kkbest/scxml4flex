@@ -34,8 +34,8 @@ package scxml.invoke {
 		}
 		
 		override public function start(optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
-			super.start(optionalParentExternalQueue, invokeid);
 			sm.start(optionalParentExternalQueue, invokeid);
+			super.start(optionalParentExternalQueue, invokeid);
 		} 
 		
 	}

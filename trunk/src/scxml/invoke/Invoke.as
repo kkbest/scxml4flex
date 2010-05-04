@@ -12,6 +12,7 @@ package scxml.invoke {
 		
 		protected var _lastResult : Object;
 		private var _finalizeArray : Array;
+		private var _autoforward : Boolean = false;
 		
 		
 		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, toQueue : Queue = null) : void {
@@ -61,5 +62,14 @@ package scxml.invoke {
 			_finalizeArray = value;
 		}
 		
+		public function get autoforward():Boolean
+		{
+			return _autoforward;
+		}
+		
+		public function set autoforward(value:Boolean):void
+		{
+			_autoforward = value;
+		}
 	}
 }

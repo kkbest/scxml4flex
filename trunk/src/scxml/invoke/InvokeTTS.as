@@ -23,6 +23,7 @@ package scxml.invoke {
 		private var vaas : BasicVaas;
 		private var toSay : String;
 		private var _abort : Boolean = false;
+		private var soundPlaying : SoundChannel;
 		
 		public function InvokeTTS()	{
 			setupVaas();
@@ -48,13 +49,15 @@ package scxml.invoke {
 			}
 			var target : BasicVaas = BasicVaas(event.target);
 			_lastResult = target.requestedSound;
-			target.requestedSound.play().addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
+			soundPlaying = target.requestedSound.play(); 
+			soundPlaying.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
 			staticMsgs.setProperty(toSay, vaas.requestedId);
 		}
 		
 		private function onPlaybackComplete(event : Event) : void {
-			SoundChannel(event.currentTarget).removeEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
+			soundPlaying.removeEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
 			dispatchEvent(new InvokeEvent(InvokeEvent.SEND_RESULT, {"lastResult" : _lastResult}));
+			soundPlaying = null;
 		}
 		
 		private function onVaasError(event:Event) : void {
@@ -63,9 +66,12 @@ package scxml.invoke {
 		
 		private function abort() : void {
 			trace("abort tts");
+			if(!soundPlaying) return;
 			_abort = true;
-			SoundChannel(_lastResult).stop();
-			vaas.
+			soundPlaying.stop();
+			soundPlaying.removeEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
+			soundPlaying = null;
+			
 			
 			dispatchEvent(new InvokeEvent(InvokeEvent.ABORT));
 		}

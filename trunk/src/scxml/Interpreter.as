@@ -145,6 +145,9 @@ package scxml {
                         if(i.invokeid == externalEvent.invokeid) {  // event is the result of an <invoke> in this state
                             applyFinalize(i, externalEvent);
 						}
+						if(i.autoforward) {
+							i.send(externalEvent.name, null, 0, externalEvent.data);
+						}
 					}
 				}
 			}
