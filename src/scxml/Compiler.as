@@ -104,7 +104,8 @@ package scxml {
 									inv.loadFromSource(node.@src);
 								if(node.hasOwnProperty("content"))
 									inv.content = XML(node.content.scxml.toString());
-									
+								if(node.hasOwnProperty("@autoforward") && node.@autoforward == "true")
+									inv.autoforward = true;
 								invoke = inv;
 								
 								break;
@@ -119,8 +120,19 @@ package scxml {
 						invoke.invokeid = node.@id;
 						invoke.type = node.@type;
 						parentState.addInvoke(invoke);
-						if(node.hasOwnProperty("finalize"))
+						if(node.hasOwnProperty("finalize") && XML(node.finalize).children().length() > 1) {
 							invoke.finalizeArray = makeExecContent(XML(node.finalize));
+						} else if(node.hasOwnProperty("finalize") && node.hasOwnProperty("param")) {
+							var paramNodes : XMLList = node.(name() == "param" && !hasOwnProperty("@expr"));
+							
+							invoke.finalizeArray = [
+									function() : void {
+										for each(var param : XML in paramNodes)
+											doc.dataModel[String(param.@name)] = doc.dataModel["_event"].data[String(param.@name)];
+									}
+								
+								];
+						}
 						break;
 					
 				}
@@ -160,7 +172,7 @@ package scxml {
 							f = function() : void {interpreter.cancelEvent(child.@sendid)};
 							break;
 						case "param" :
-							throw new Error("param can currently only be the child of the send tag");
+							throw new Error("param can currently only be the child of a send or invoke tag");
 						case "send":
 							var type : String = child.@type != null ? child.@type : "scxml";
 							var data : Object = {};
@@ -181,7 +193,6 @@ package scxml {
 									switch(String(child.@target).slice(1)) {
 										case "_parent":
 											f = function() : void {
-//												trace("parent send", dm["_parent"], Interpreter(interpreter).invId);
 												interpreter.send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data), interpreter.invokeid, doc.dataModel["_parent"]); 
 											};
 											
@@ -222,10 +233,11 @@ package scxml {
 		private function appendParam(child : XML, toObj : Object) : Object {
 			if(child.hasOwnProperty("param")) {
 				for each(var elem : XML in child.param) {
+					var expr : String = elem.hasOwnProperty("@expr") ? elem.@expr : elem.@name;
 					if(elem.@name == "grammar")
-						toObj[String(elem.@name)] = grammarCleanup(evalExpr(elem.@expr));
+						toObj[String(elem.@name)] = grammarCleanup(evalExpr(expr));
 					else
-						toObj[String(elem.@name)] = evalExpr(elem.@expr);
+						toObj[String(elem.@name)] = evalExpr(expr);
 				}
 			}
 			
@@ -243,6 +255,8 @@ package scxml {
 			main.setProperties(node);
 			main.initial = parseInitial(node);
 			doc.mainState = main;
+			if(node.hasOwnProperty("script"))
+				evalExpr(XML(node.script).toString());
 		}
 		
 		private function parseTransition(node : XML, source : GenericState, i : Number) : Transition {

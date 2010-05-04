@@ -10,8 +10,7 @@ package scxml {
 		
 		public function SCXMLDocument()	{
 			states = {};
-			dataModel = {};
-//			states["root"] = new SCXMLState("root", null);
+			dataModel = {"set" : function(key : String, val : *) : void {this.dataModel[key] = val;}};
 		}
 		public function pushState(s : GenericState) : GenericState {
 			states[s.id] = s;

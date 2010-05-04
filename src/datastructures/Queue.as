@@ -11,6 +11,7 @@ package datastructures {
 		}
 		
 		public function enqueue(elem : *) : void {
+			if(elem == null) throw new Error("elem cannot be null");
 			list.push(elem);
 			dispatchEvent(new Event(Event.ADDED));
 		}

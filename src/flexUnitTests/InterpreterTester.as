@@ -18,16 +18,12 @@ package flexUnitTests {
 		
 		[Embed(source="../../unittest_xml/history.xml")]
 		protected const HistoryXML : Class;
-		
 		[Embed(source="../../unittest_xml/factorial.xml")]
 		protected const FacXML : Class;
-
 		[Embed(source="../../unittest_xml/colors.xml")]
 		protected const ColorXML : Class;
-
 		[Embed(source="../../unittest_xml/parallel.xml")]
 		protected const ParallelXML : Class;
-		
 		[Embed(source="../../unittest_xml/all_configs.xml")]
 		protected const ConfigXML : Class;
 		[Embed(source="../../unittest_xml/issue_626.xml")]
