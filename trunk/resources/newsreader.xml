@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<scxml profile="ecmascript" xmlns="http://www.w3.org/2005/07/scxml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.w3.org/2005/07/scxml http://scxml-schema.googlecode.com/svn/SCXML-Schema/ecma/scxml-profile-ecma.xsd" version="1.0">
+
+			
+	<script><![CDATA[
+		function assignSlotsToDm(slots) {
+			for(var i in slots)
+				set(i, slots[i]);
+		}
+		function generateGrammarFromList(inputList) {
+			return "#JSGF V1.0; grammar g; public <top> = " + inputList.join(" | ") + ";\n";
+		}
+		function range(n, m) {
+			var output = []; 
+			for(var i = n; i < m; i++)
+				output.push(i);
+			return output;
+		}
+		
+	]]></script>
+	
+	
+	<datamodel>
+		<data id="grammar_lang" expr="generateGrammarFromList(['swedish', 'english'])" />
+		<data id="grammar_num" expr="generateGrammarFromList(range(1, 9))" />
+		<data id="grammar_source" expr="generateGrammarFromList(['dn', 'gp'])" />
+		
+		<data id="lang" />
+		<data id="n_items" />
+		<data id="source" />
+		<data id="newsitems" />
+		
+	</datamodel>
+	
+	
+	<state id="dialog">
+		<transition target="reading" cond="lang and n_items and source" />
+		<invoke id="tts" type="x-tts" />
+		<invoke id="asr" type="x-asr" />
+
+		<state id="init">
+			<transition event="init.invoke.tts" target="language" />
+		</state>
+		
+		
+		<state id="language">
+			<onentry>
+				<send type="x-tts" target="#tts" >
+					<param name="say" expr="'Welcome. Which language?'" />
+				</send>
+			</onentry>
+			
+			<transition event="result.invoke.tts">
+				<send type="x-asr" target="#asr">
+					<param name="grammar" expr="grammar_lang" />
+				</send>
+			</transition>
+			
+			<transition event="result.invoke.asr.*" target="n_items" >
+				<log label="setting language" expr="_event.data.lastResult" />
+				<assign location="language" expr="_event.data.lastResult" />
+			</transition>
+
+		</state>
+		
+		<state id="num">
+			<onentry>
+				<send type="x-tts" target="#tts">
+					<param name="say" expr="'How many items?'" />
+				</send>
+			</onentry>
+			
+			<transition event="result.invoke.tts">
+				<send type="x-asr" target="#asr">
+					<param name="grammar" expr="grammar_num" />
+				</send>
+			</transition>
+			
+			<transition event="result.invoke.asr.*" target="news_source" >
+				<log label="setting num items" expr="_event.data.lastResult" />
+				<assign location="n_items" expr="parseInt(_event.data.lastResult)" />
+			</transition>
+			
+		</state>
+		
+		<state id="news_source">
+			<onentry>
+				<send type="x-tts" target="#tts">
+					<param name="say" expr="'From which source?'" />
+				</send>
+			</onentry>
+			
+			<transition event="result.invoke.tts">
+				<send type="x-asr" target="#asr">
+					<param name="grammar" expr="grammar_source" />
+				</send>
+			</transition>
+			
+			<transition event="result.invoke.asr.*" target="reading" >
+				<log label="setting source" expr="_event.data.lastResult" />
+				<assign location="source" expr="_event.data.lastResult" />
+			</transition>
+			
+		</state>
+	
+	</state>
+	
+	<state id="reading">
+		<onentry>
+			<send type="x-tts" target="#tts">
+				<param name="say" expr="" />
+			</send>
+		</onentry>
+		<invoke id="nextphase" type="x-acapela-nextphase">
+			<param name="a" expr="lang" />
+			<param name="b" expr="n_items" />
+			<param name="c" expr="source" />
+			
+		</invoke>
+		
+		<state id="init_np">
+			<transition event="init.invoke.nextphase" target="speaking">
+				<send event="start" target="#nextphase" />
+			</transition>
+		</state>
+		
+		<state id="speaking">
+			
+		</state>
+		
+		<transition event="*" target="final" />
+	</state>
+	
+	
+	
+	<final id="final"/>
+</scxml>
+

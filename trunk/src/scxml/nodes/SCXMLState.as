@@ -6,11 +6,9 @@ package scxml.nodes {
 	public class SCXMLState extends GenericState {
 		
 		private var flexViewState : String;
-//		private var initTransition : Transition;
 		
 		public function SCXMLState(sId : String, pState : IState, num : Number = NaN) { 
 			super(sId, pState, num); 
-			optionalProperties = ["viewstate"];
 		}
 		
 		public function set viewstate(id : String) : void {

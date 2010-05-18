@@ -7,11 +7,15 @@ package scxml {
 	
 	import interfaces.IInterpreter;
 	
+	import mx.logging.ILogger;
+	import mx.logging.Log;
+	
 	import r1.deval.D;
 	
 	import scxml.error.SCXMLValidationError;
 	import scxml.invoke.Invoke;
 	import scxml.invoke.InvokeASR;
+	import scxml.invoke.InvokeNextPhase;
 	import scxml.invoke.InvokeSCXML;
 	import scxml.invoke.InvokeTTS;
 	import scxml.nodes.*;
@@ -23,6 +27,10 @@ package scxml {
 		private var doc : SCXMLDocument;
 		private var counter : int = 0;
 		private var interpreter : IInterpreter;
+		
+		private static const logger:ILogger = Log.getLogger("Compiler");
+		
+		default xml namespace = new Namespace("http://www.w3.org/2005/07/scxml");
 		
 		public function Compiler(i : IInterpreter) {
 			interpreter = i;
@@ -39,12 +47,13 @@ package scxml {
 		
 		private function descendantOf(node : XML, descTag : String) : Boolean {
 			if(!node.parent()) return false;
-			if(String(node.parent().name()) == descTag) 
+			if(String(node.parent().localName()) == descTag) 
 				return true;
 			return descendantOf(node.parent(), descTag);
 		} 
 		
 		public function parse(xml : XML) : void {
+			debug("parse first node", xml);
 			doc = new SCXMLDocument();
 			parseRoot(xml);
 			var descendants : XMLList = xml.descendants();
@@ -52,18 +61,19 @@ package scxml {
 				var node : XML = descendants[i];
 				if(descendantOf(node, "content")) 
 					continue;
-				var nodeName : String = String(node.name());
+				var nodeName : String = String(node.localName());
 				var pId : String = node.parent().@id;
 				var parentState : GenericState = doc.getState(pId);
 				switch(nodeName) {
 					case "state":
-						var newState : GenericState = doc.pushState(new SCXMLState(get_sid(node), parentState, i));
-						newState.setProperties(node);
+						var newState : SCXMLState = doc.pushState(new SCXMLState(get_sid(node), parentState, i)) as SCXMLState;
+						if(node.hasOwnProperty("@viewstate"))
+							newState.viewstate = String(node.@viewstate);
 						if(isCompoundState(node))
 							newState.initial = parseInitial(node);
 						break;
 					case "transition":	
-						if(String(node.parent().name()) != "initial") {
+						if(String(node.parent().localName()) != "initial") {
 							var transition : Transition = parseTransition(node, parentState, i);
 							parentState.addTransition(transition);
 						} 
@@ -73,11 +83,10 @@ package scxml {
 						break;
 					case "history":
 						var history : History = doc.pushHistory(new History(get_sid(node), parentState, i));
-						history.setProperties(node);
+						history.type = node.@type;
 						break;
 					case "parallel":
 						var parallelState : GenericState = doc.pushState(new Parallel(get_sid(node), parentState, i));
-//						parallelState.setProperties(node);
 						break;
 					case "onentry":
 						var onEntry : Exec = new Exec(makeExecContent(node));
@@ -115,15 +124,18 @@ package scxml {
 							case "x-asr":
 								invoke = new InvokeASR();
 								break;
+							case "x-nextphase":
+								invoke = new InvokeNextPhase();
+								break;
 						}
 						
 						invoke.invokeid = node.@id;
 						invoke.type = node.@type;
 						parentState.addInvoke(invoke);
-						if(node.hasOwnProperty("finalize") && XML(node.finalize).children().length() > 1) {
+						if(node.hasOwnProperty("finalize") && XML(node.finalize).children().length() > 0) {
 							invoke.finalizeArray = makeExecContent(XML(node.finalize));
 						} else if(node.hasOwnProperty("finalize") && node.hasOwnProperty("param")) {
-							var paramNodes : XMLList = node.(name() == "param" && !hasOwnProperty("@expr"));
+							var paramNodes : XMLList = node.(localName() == "param" && !hasOwnProperty("@expr"));
 							
 							invoke.finalizeArray = [
 									function() : void {
@@ -144,7 +156,7 @@ package scxml {
 		private function makeExecContent(node : XML) : Array {
 		    var fArray : Array = [];
 	        for each(var child : XML in node.children()) {
-	        	var nodeName : String = String(child.name());
+	        	var nodeName : String = String(child.localName());
 //	        	peculiar scope issue hack.
 	        	var getFunction : Function = function(child : XML) : Function {
 	        		var f : Function;
@@ -156,7 +168,7 @@ package scxml {
             				};
 		            		break; 
 	            		case "assign":
-							var expression : String = child.@expr != null ? child.@expr : child.text.toString();
+							var expression : String = child.hasOwnProperty("@expr") ? child.@expr : child.text.toString();
 	            			f = function() : void {doc.dataModel[String(child.@location)] = evalExpr(expression)};
 	            			break;
 	        			case "raise":
@@ -215,7 +227,7 @@ package scxml {
 								break;
 		            		default:
 		            			throw new SCXMLValidationError("Parsing failed: a " + 
-		            				nodeName + " node may not be the child of a " + node.name() + " node.");
+		            				nodeName + " node may not be the child of a " + node.localName() + " node.");
 								break;
 							}
 		        	
@@ -252,7 +264,6 @@ package scxml {
 		private function parseRoot(node : XML) : void {
 			var main : MainState = new MainState("__main__", null, 0);
 			node.@id = "__main__";
-			main.setProperties(node);
 			main.initial = parseInitial(node);
 			doc.mainState = main;
 			if(node.hasOwnProperty("script"))
@@ -285,7 +296,7 @@ package scxml {
 				initial = new Initial(String(transitionNode.@target).split(" "));
 				initial.setExecFunctions(makeExecContent(transitionNode));
 			} else { // has neither initial tag or attribute, so we'll make the first valid state a target instead.
-				var childNodes : XMLList = node.children().(ArrayUtils.member(name(), ["state", "parallel", "final"]));
+				var childNodes : XMLList = node.children().(ArrayUtils.member(localName(), ["state", "parallel", "final"]));
 				initial = new Initial([String(childNodes[0].@id)]);
 			}
 			
@@ -305,6 +316,11 @@ package scxml {
 		
 		public function get document() : SCXMLDocument {
 			return doc;
+		}
+		
+		private function debug(msg : String, ...args : Array) : void {
+			var argArray : Array = ArrayUtils.map(function(n : Number) : String {return "{" + n + "}"}, ArrayUtils.range(0, args.length));
+			logger.debug.apply(null, [msg + " " + argArray.join(" ")].concat(args));
 		}
 	}
 }

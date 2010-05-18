@@ -13,6 +13,8 @@ package scxml {
 	import interfaces.IState;
 	
 	import mx.core.IStateClient;
+	import mx.logging.ILogger;
+	import mx.logging.Log;
 	
 	import scxml.events.InterpreterEvent;
 	import scxml.events.InvokeEvent;
@@ -48,14 +50,14 @@ package scxml {
 		
 		private var flexContainer : IStateClient;
 		
-		private const doLogging : Boolean = true;
-		
 		private var invId : String;
 		
 		private var statesToInvoke : OrderedSet;
 		private var previousConfiguration : OrderedSet;
 		
 		private var macroStepEnabled : Boolean = false;
+		
+		private static const logger:ILogger = Log.getLogger("Interpreter");
 		
 		
 		public function Interpreter(root : IStateClient = null) {
@@ -69,6 +71,7 @@ package scxml {
 			
 			previousConfiguration = new OrderedSet();
 			statesToInvoke = new OrderedSet();
+			
 		}
 		
 		public function interpret(document : SCXMLDocument, optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
@@ -117,9 +120,9 @@ package scxml {
 		
 		
 		private function onExternalEvent(event : Event) : void {
-//			trace("onExternalEvent", macroStepEnabled, externalQueue);
+//			logger.debug("onExternalEvent", macroStepEnabled, externalQueue);
 			if(!bContinue) {
-				trace("The statemachine has reached it's final state(s) and is no longer accepting events.");
+				logger.debug("The statemachine has reached it's final state(s) and is no longer accepting events.");
 				return;
 			}
 			if(macroStepEnabled)
@@ -136,7 +139,7 @@ package scxml {
             var externalEvent : InterpreterEvent = externalQueue.dequeue(); 
 			
 			var suffix : String = invId != null ? "in interpreter: " + invId : "";
-            trace("external event found: " + externalEvent.name, suffix);
+            logger.debug("external event found: " + externalEvent.name, suffix);
 
             dm["_event"] = externalEvent;
             if(externalEvent.invokeid) {
@@ -197,7 +200,7 @@ package scxml {
 	        if (inFinalState) {
 	            if (invId && dm["_parent"]) 
 	                dm["_parent"].enqueue(new InterpreterEvent(["done", "invoke", invId], {}))
-	            trace( "Exiting interpreter", invId != null ? invId : "");
+	            logger.debug( "Exiting interpreter", invId != null ? invId : "");
 				dispatchEvent(new SCXMLEvent(SCXMLEvent.FINAL_STATE_REACHED));
 			}
 			
@@ -277,8 +280,8 @@ package scxml {
 			
 		    // Logging
 	    	var config : Array = ArrayUtils.mapProperty(configuration, "id");
-		    if(doLogging && config.length > 1) {
-			    trace("configuration: [" + config.slice(1).join(", ") + "]");
+		    if(config.length > 1) {
+			    logger.debug("configuration: [" + config.slice(1).join(", ") + "]");
 		    }
 		    // TODO: revise this
 		    dispatchEvent(new SCXMLEvent(SCXMLEvent.STATE_ENTERED, config[config.length-1], enabledTransitions[0]));
@@ -543,7 +546,7 @@ package scxml {
 		}
 		
 		private function invoke(inv : Invoke, extQ : Queue) : void {
-//			trace("starting invoke", inv);
+//			logger.debug("starting invoke", inv);
 			dm[inv.invokeid] = inv;
 			inv.addEventListener(InvokeEvent.INIT, invokeListener);
 			inv.addEventListener(InvokeEvent.SEND_RESULT, invokeListener);
@@ -603,7 +606,7 @@ package scxml {
 		
 		private function cancelInvoke(inv : Invoke) : void {
 //			dm["#" + inv.invokeid] = null;
-			trace("invoke cancelled", inv.invokeid);
+			logger.debug("invoke cancelled", inv.invokeid);
 			inv.cancel();
 		}
 		
@@ -619,8 +622,7 @@ package scxml {
 			var viewState : String = s.viewstate;
 			if(viewState != null && flexContainer) {
 				flexContainer.currentState = viewState;
-				if(doLogging)
-					trace("current viewstate: " + viewState);
+				logger.debug("current viewstate: " + viewState);
 			}
 		}
 		public function isFinished() : Boolean {
