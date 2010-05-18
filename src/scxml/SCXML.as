@@ -28,6 +28,7 @@ package scxml {
 		}
 		
 		public function set source(xml : XML) : void {
+			trace("source");
 			compiler = new Compiler(interpreter);  
 			
 			compiler.parse(xml);

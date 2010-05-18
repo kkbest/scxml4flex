@@ -1,9 +1,5 @@
 <scxml initial="closed">
 	
-	<script>
-		trace('onLoadTime', this);
-	</script>
-	
 	<final id="opened" />
 	
 	<parallel id="closed" initial="lock_1 lock_2">

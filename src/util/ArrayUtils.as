@@ -29,5 +29,11 @@ package util {
 			function f(item:*, index:int, array:Array) : Boolean {return func(item)}
 			return a.filter(f);
 		}
+		public static function range(from : int, to : int) : Array {
+			var output : Array = [];
+			for(var i : int = from; i < to; i++)
+				output.push(i);
+			return output;
+		}
 	}
 }

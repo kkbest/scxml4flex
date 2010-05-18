@@ -1,6 +1,7 @@
 package scxml.invoke {
 	import datastructures.Queue;
 	
+	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	
 	import scxml.events.InvokeEvent;
@@ -9,17 +10,22 @@ package scxml.invoke {
 		
 		private var _invokeid : String;
 		private var _type : String;
-		
-		protected var _lastResult : Object;
 		private var _finalizeArray : Array;
 		private var _autoforward : Boolean = false;
 		
+		protected var _lastResult : Object;
+		protected var _isReady : Boolean = false;
+		
+		public function Invoke() {
+		}
 		
 		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, toQueue : Queue = null) : void {
+			throw new IllegalOperationError("Method must be overwritten");
 		}
 		
 		public function start(optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
 			dispatchEvent(new InvokeEvent(InvokeEvent.INIT));
+			_isReady = true;
 		}
 		
 		public function cancel() : void {
@@ -70,6 +76,11 @@ package scxml.invoke {
 		public function set autoforward(value:Boolean):void
 		{
 			_autoforward = value;
+		}
+		
+		public function get isReady():Boolean
+		{
+			return _isReady;
 		}
 	}
 }
