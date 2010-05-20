@@ -31,6 +31,7 @@ package scxml {
 		private static const logger:ILogger = Log.getLogger("Compiler");
 		
 		default xml namespace = new Namespace("http://www.w3.org/2005/07/scxml");
+		namespace scxml4flex = "http://code.google.com/p/scxml4flex";
 		
 		public function Compiler(i : IInterpreter) {
 			interpreter = i;
@@ -53,7 +54,6 @@ package scxml {
 		} 
 		
 		public function parse(xml : XML) : void {
-			debug("parse first node", xml);
 			doc = new SCXMLDocument();
 			parseRoot(xml);
 			var descendants : XMLList = xml.descendants();
@@ -101,8 +101,6 @@ package scxml {
 							doc.dataModel[String(node.@id)] = evalExpr(node.@expr);
 						else
 							doc.dataModel[String(node.@id)] = node.toString();
-							
-						
 						break;
 					case "invoke":
 						var invoke : Invoke;
@@ -124,7 +122,7 @@ package scxml {
 							case "x-asr":
 								invoke = new InvokeASR();
 								break;
-							case "x-nextphase":
+							case "x-acapela-nextphase":
 								invoke = new InvokeNextPhase();
 								break;
 						}
@@ -186,56 +184,65 @@ package scxml {
 						case "param" :
 							throw new Error("param can currently only be the child of a send or invoke tag");
 						case "send":
-							var type : String = child.@type != null ? child.@type : "scxml";
-							var data : Object = {};
-							
-							if(child.hasOwnProperty("@target") && String(child.@target).slice(0,1) == "#") {
-									
-									switch(type) {
-										case "scxml":
-											break;
-										case "x-asr":
-											if(child.hasOwnProperty("content"))
-												data["grammar"] = grammarCleanup(child.content.toString());
-											break;
-										case "x-tts":
-											break;
-									}
-									
-									switch(String(child.@target).slice(1)) {
-										case "_parent":
-											f = function() : void {
-												interpreter.send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data), interpreter.invokeid, doc.dataModel["_parent"]); 
-											};
-											
-											break;
-										default:
-											f = function() : void {
-												Invoke(doc.dataModel[String(child.@target).slice(1)]).send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data)); 
-											};
-											
-											break;
-											
-									}
-									
-							} else {
-								// default, i.e no target specified.
-								f = function() : void {
-									interpreter.send(child.@event.split("."), child.@id, parseInt(child.@delay));
-								};
-							}
-								break;
-		            		default:
-		            			throw new SCXMLValidationError("Parsing failed: a " + 
-		            				nodeName + " node may not be the child of a " + node.localName() + " node.");
-								break;
-							}
+							f = parseSend(child);
+							break;
+	            		default:
+	            			throw new SCXMLValidationError("Parsing failed: a " + 
+	            				nodeName + " node may not be the child of a " + node.localName() + " node.");
+							break;
+						}
 		        	
 		        	return f;
 	        	};
 	        	fArray.push(getFunction(child));
+				
 			}
 	        return fArray;
+		}
+		
+		private function parseSend(child : XML) : Function {
+			var f : Function;
+			var type : String = child.hasOwnProperty("@type") ? child.@type : "scxml";
+			var data : Object = {};
+			
+			if(!child.hasOwnProperty("@target"))
+				return function() : void {
+					interpreter.send(child.@event.split("."), child.@id, parseInt(child.@delay));
+				};
+			
+			if(String(child.@target).slice(0,1) == "#") {
+				var target : String = String(child.@target).slice(1);
+				switch(type) {
+					case "scxml":
+						break;
+					case "x-asr":
+						if(child.hasOwnProperty("content"))
+							data["grammar"] = grammarCleanup(child.content.toString());
+						break;
+					case "x-tts":
+						break;
+				}
+				
+				switch(target) {
+					case "_parent":
+						f = function() : void {
+							interpreter.send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data), interpreter.invokeid, doc.dataModel["_parent"]); 
+						};
+						
+						break;
+					default:
+						f = function() : void {
+							Invoke(doc.dataModel[target]).send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data)); 
+						};
+						
+						break;
+					
+				}
+				
+			}
+			
+			if(f == null) throw new Error("Something went wrong in parsing of send");
+			return f;
 		}
 		
 		private function grammarCleanup(input : String) : String {
@@ -246,6 +253,13 @@ package scxml {
 			if(child.hasOwnProperty("param")) {
 				for each(var elem : XML in child.param) {
 					var expr : String = elem.hasOwnProperty("@expr") ? elem.@expr : elem.@name;
+					if(elem.hasOwnProperty("@expr"))
+						expr = elem.@expr;
+					// not necesarily standars compliant (hard to tell):
+					else if(doc.dataModel.hasOwnProperty(String(elem.@name)))
+						expr = elem.@name;
+					else
+						expr = "";
 					if(elem.@name == "grammar")
 						toObj[String(elem.@name)] = grammarCleanup(evalExpr(expr));
 					else
@@ -297,7 +311,7 @@ package scxml {
 				initial.setExecFunctions(makeExecContent(transitionNode));
 			} else { // has neither initial tag or attribute, so we'll make the first valid state a target instead.
 				var childNodes : XMLList = node.children().(ArrayUtils.member(localName(), ["state", "parallel", "final"]));
-				initial = new Initial([String(childNodes[0].@id)]);
+				initial = new Initial([String(get_sid(childNodes[0]))]);
 			}
 			
 			return initial;

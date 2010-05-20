@@ -10,8 +10,6 @@ package abstract {
 	
 	public class GenericState implements IState {
         
-		protected var optionalProperties : Array;
-		
         protected var onExitArray : Array;
         protected var onEntryArray : Array;
         

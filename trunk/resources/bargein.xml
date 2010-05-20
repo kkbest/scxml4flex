@@ -1,40 +1,40 @@
 <?xml version="1.0"?>
 <scxml initial="main">
+	<datamodel>
+		<data id="grammar">
+		<![CDATA[
+		#JSGF V1.0;
+		grammar bargin;
+		public <top> = hello;
+		]]>	
+		</data>
+	</datamodel>
 	<state id="main">
-		<invoke id="tts" type="scxml">
+		<invoke id="agent" type="scxml">
 			<content>
 				<scxml>
 					<state id="root">
-						<datamodel>
-							<data id="grammar">
-							<![CDATA[
-							#JSGF V1.0;
-							grammar bargin;
-							public <top> = hello;
-							]]>	
-							</data>
-						</datamodel>
-						<invoke id="tts2" type="x-tts" />
+						<invoke id="tts" type="x-tts" />
 						<invoke id="asr" type="x-asr" />
 						
 						<state id="init">
-							<transition event="init.invoke.tts2" target="waiting">
-							</transition>
+							<transition event="init.invoke.tts" target="waiting" />
+							<send target="#_parent" event="ready" />
 						</state>
 						
 						<state id="waiting">
 							<transition event="say" target="speaking">
-								<send type="x-tts" target="#tts2">
+								<send type="x-tts" target="#tts">
 									<param name="say" expr="_event.data.say" />
 								</send>
 								<send type="x-asr" target="#asr">
-									<param name="grammar" />
+									<param name="_event.data.grammar" />
 								</send>
 							</transition>
 						</state>
 						<state id="speaking">
 							<transition event="result.invoke.asr">
-								<send event="abort" type="x-tts" target="#tts2"  />
+								<send event="abort" type="x-tts" target="#tts"  />
 								<send target="#_parent" event="result.invoke.asr">
 									<param name="lastResult" expr="_event.data.lastResult" />
 								</send>
@@ -48,15 +48,16 @@
 		</invoke>
 
 		<state id="initializing">
-			<transition event="init.invoke.tts" target="talk">
+			<transition event="ready" target="talk">
 				<log expr="'init.invoke.tts transition taken'" />
 			</transition>
 			
 		</state>
 		<state id="talk">
 			<onentry>
-				<send target="#tts" event="say">
+				<send target="#agent" event="prompt">
 					<param name="say" expr="'hello, please interrupt me while I have a long exposition about the theory of everything and then go on to talk some more about what\'s on my mind.'" />
+					<param name="grammar" />
 				</send>
 			</onentry>
 			<transition event="result.invoke.tts" target="talk"/>
