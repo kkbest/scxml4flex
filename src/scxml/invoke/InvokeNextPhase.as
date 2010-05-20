@@ -3,6 +3,7 @@ package scxml.invoke {
 	
 	import flash.events.Event;
 	
+	import mx.collections.ListCollectionView;
 	import mx.controls.Alert;
 	import mx.logging.ILogger;
 	import mx.logging.Log;
@@ -35,7 +36,6 @@ package scxml.invoke {
 		private var newsItemsResponder : CallResponder;
 		
 		public function InvokeNextPhase() {
-			debug("InvokeNextPhase()");
 			setupResponders();
 			webservice = new Service1();	
 			webservice.addEventListener(FaultEvent.FAULT, function(event : FaultEvent) : void {
@@ -55,11 +55,16 @@ package scxml.invoke {
 		}
 		
 		private function onCategoryResult(event : ResultEvent) : void {
-			debug("languageResult", event.result);
-			debug("languageResult is string", event.result is String);
+//			debug("languageResult", event.result);
+//			debug("languageResult is string", event.result is String);
+			
+			
+			
+			
 		}
 		private function onLanguageResult(event : ResultEvent) : void {
-			debug("categoryResult", event.result);
+			debug("languageResult", event.result);
+			super.start(null, null);
 		}
 		private function onNewItemResult(event : ResultEvent) : void {
 			debug("newItemResult", event.result);
@@ -68,19 +73,28 @@ package scxml.invoke {
 			debug("infolet", result.infolets[0].body);
 			debug("infolet", result.infolets[0].ingress);
 			debug("infolet", result.infolets[0].data);
-			dispatchEvent(new InvokeEvent(InvokeEvent.SEND_RESULT, {"lastResult" : result.infolets}));
+			dispatchEvent(new InvokeEvent(InvokeEvent.SEND_RESULT, {"lastResult" : result.infolets.toArray()}));
 		}
 		
 		override public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, toQueue : Queue = null) : void {
-			
-			if(data.hasOwnProperty("getNewsItems"))
-//				newsItemsResponder.token = webservice.GetLatestNewsItems(data.category, "SightCity_CNN", data.num);
-				newsItemsResponder.token = webservice.GetLatestNewsItems("", "SightCity_CNN", 10);
-			else if(data.hasOwnProperty("getCategories"))
-				categoryResponder.token = webservice.GetAvailableCategories(data.language);
-				
-//			else if(data.hasOwnProperty("getSources")
+			switch(eventName[0]) {
+				case "getNewsItems":
+					newsItemsResponder.token = webservice.GetLatestNewsItems("", "SightCity_CNN", 10);
+					break;
+				case "getCategories":
+//				categoryResponder.token = webservice.GetAvailableCategories(data.lang);
+					var categories : Array = ["news", "technology"];
+					dispatchEvent(new InvokeEvent(InvokeEvent.SEND_RESULT, {"lastResult" : categories}));
+					break;
+				case "getSources":
 //				sourceResponder.token = webservice.GetAvailableCategories();
+					dispatchEvent(new InvokeEvent(InvokeEvent.SEND_RESULT, {"lastResult" : ["CNN"]}));
+					break;
+				case "getLanguages":
+					dispatchEvent(new InvokeEvent(InvokeEvent.SEND_RESULT, {"lastResult" : languageResponder.lastResult.toArray()}));
+					break;
+					
+			}
 		}
 		
 		private function onServiceResult(event : ResultEvent) : void {
@@ -93,10 +107,7 @@ package scxml.invoke {
 		}
 		
 		override public function start(optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
-//			get languages here, then do super.start() from onLanguageResult
-			
-			
-			super.start(optionalParentExternalQueue, invokeId);
+			languageResponder.token = webservice.GetAvailableLanguages();
 		}
 		
 		

@@ -1,5 +1,7 @@
 <scxml profile="ecmascript" xmlns="http://www.w3.org/2005/07/scxml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.w3.org/2005/07/scxml http://scxml-schema.googlecode.com/svn/SCXML-Schema/ecma/scxml-profile-ecma.xsd" version="1.0">
+xsi:schemaLocation="http://www.w3.org/2005/07/scxml http://scxml-schema.googlecode.com/svn/SCXML-Schema/ecma/scxml-profile-ecma.xsd" 
+xmlns:scxml4flex="http://code.google.com/p/scxml4flex"
+version="1.0">
 	
 	<script><![CDATA[
 		function assignSlotsToDm(slots) {
@@ -40,9 +42,10 @@ xsi:schemaLocation="http://www.w3.org/2005/07/scxml http://scxml-schema.googleco
 			</finalize>
 		</invoke>
 		<transition event="init.invoke">
+			<!-- <scxml4flex:getNewsItems target="#nextphase" namelist="language nItems source" /> -->
 			<send type="x-nextphase" target="#nextphase" namelist="language nItems source">
 				<param name="getNewsItems" />
-			</send> 
+			</send>
 		</transition>
 		
 		<transition event="result.invoke" target="f2">

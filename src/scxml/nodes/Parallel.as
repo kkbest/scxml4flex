@@ -6,7 +6,6 @@ package scxml.nodes {
 	public class Parallel extends GenericState {
 		public function Parallel(sId : String, pState : IState, num : Number = NaN) {
 			super(sId, pState, num);
-			optionalProperties = [];
 		}
 		
 		public function toString() : String {

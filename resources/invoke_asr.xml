@@ -6,9 +6,10 @@
 			<send type="x-asr" target="#asr">
 				<content>
 				<![CDATA[
-					#JSGF V1.0;
-					grammar testing;
-					public <top> = go final;
+					#JSGF V1.0; 
+					grammar g; 
+					public <top> = English | Swedish;
+
 				]]>	
 				</content>
 			</send>
