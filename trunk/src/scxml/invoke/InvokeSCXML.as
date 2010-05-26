@@ -12,15 +12,18 @@ package scxml.invoke {
 		private var _invokeid : String;
 		private var _type : String;
 		private var sm : SCXML;
+		private var loader : URLLoader;
+		private var delayStartArgs : Array;
 		
 		public function InvokeSCXML() {
 			sm = new SCXML();
 		}
 		
 		public function loadFromSource(src : String) : void {
-			var loader : URLLoader = new URLLoader();
+			loader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, function(event : Event) : void {
 				sm.source = XML(URLLoader(event.currentTarget).data);
+				if(delayStartArgs) start.apply(null, delayStartArgs);
 			});
 			loader.load(new URLRequest(src));
 		}
@@ -34,8 +37,12 @@ package scxml.invoke {
 		}
 		
 		override public function start(optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
-			sm.start(optionalParentExternalQueue, invokeid);
-			super.start(optionalParentExternalQueue, invokeid);
+			if(!sm.source && loader)
+				delayStartArgs = [optionalParentExternalQueue, invokeid];
+			else {
+				sm.start(optionalParentExternalQueue, invokeid);
+//				super.start(optionalParentExternalQueue, invokeid);
+			}
 		} 
 		
 	}

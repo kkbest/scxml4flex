@@ -5,6 +5,8 @@ package scxml.invoke {
 	import flash.events.EventDispatcher;
 	
 	import scxml.events.InvokeEvent;
+	
+	import util.ArrayUtils;
 
 	public class Invoke extends EventDispatcher {
 		
@@ -20,7 +22,10 @@ package scxml.invoke {
 		}
 		
 		public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, toQueue : Queue = null) : void {
-			throw new IllegalOperationError("Method must be overwritten");
+		}
+		
+		protected function abort() : void {
+			dispatchEvent(new InvokeEvent(InvokeEvent.ABORT));
 		}
 		
 		public function start(optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
@@ -82,5 +87,7 @@ package scxml.invoke {
 		{
 			return _isReady;
 		}
+		
+		
 	}
 }

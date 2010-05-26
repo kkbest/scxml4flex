@@ -20,6 +20,7 @@ package scxml {
 		
 		private var compiler : Compiler;
 		private var interpreter : IInterpreter;
+		private var _source : XML;
 		
 		public function SCXML() {
 			interpreter = new Interpreter();
@@ -29,9 +30,13 @@ package scxml {
 		
 		public function set source(xml : XML) : void {
 			trace("source");
+			_source = xml;
 			compiler = new Compiler(interpreter);  
 			
 			compiler.parse(xml);
+		}
+		public function get source() : XML {
+			return _source;
 		}
 		public function start(optionalParentExternalQueue : Queue = null, invokeId : String = null) : void {
 			interpreter.interpret(compiler.document, optionalParentExternalQueue, invokeId);
@@ -53,7 +58,8 @@ package scxml {
 			dispatchEvent(new SCXMLEvent(SCXMLEvent.FINAL_STATE_REACHED));
 		}
 		private function onStateEntered(event : SCXMLEvent) : void {
-			dispatchEvent(event);
+			dispatchEvent(new SCXMLEvent(SCXMLEvent.STATE_ENTERED, event.stateId, event.transition));
+//			dispatchEvent(event);
 		}
 		
 		public function get dataModel() : Object {

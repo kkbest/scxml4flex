@@ -40,7 +40,7 @@ package scxml {
 		
 		private function get_sid(node : XML) : String {
 	        if (!node.hasOwnProperty("@id") || node.@id == "") {
-	        	var id : String = "$" + ++counter;
+	        	var id : String = "_" + node.localName() + "_" + ++counter;
 	        	node.@id = id;
 	        }
             return node.@id; 
@@ -109,7 +109,7 @@ package scxml {
 								var inv : InvokeSCXML =  new InvokeSCXML();
 								if(node.hasOwnProperty("@src"))
 									inv.loadFromSource(node.@src);
-								if(node.hasOwnProperty("content"))
+								else if(node.hasOwnProperty("content"))
 									inv.content = XML(node.content.scxml.toString());
 								if(node.hasOwnProperty("@autoforward") && node.@autoforward == "true")
 									inv.autoforward = true;
@@ -166,8 +166,10 @@ package scxml {
             				};
 		            		break; 
 	            		case "assign":
-							var expression : String = child.hasOwnProperty("@expr") ? child.@expr : child.text.toString();
-	            			f = function() : void {doc.dataModel[String(child.@location)] = evalExpr(expression)};
+	            			f = function() : void {
+								var expression : String = child.hasOwnProperty("@expr") ? child.@expr : child.text.toString();
+								doc.dataModel[String(child.@location)] = evalExpr(expression)
+							};
 	            			break;
 	        			case "raise":
 	        				f = function() : void {interpreter.raiseFunction(child.@event.split("."))};
@@ -204,10 +206,18 @@ package scxml {
 			var f : Function;
 			var type : String = child.hasOwnProperty("@type") ? child.@type : "scxml";
 			var data : Object = {};
+			function parseEvent(node : XML) : Array {
+				if(node.hasOwnProperty("@event"))
+					return String(node.@event).split(".");
+				else if(node.hasOwnProperty("@eventexpr")) 
+					return String(evalExpr(String(node.@eventexpr))).split(".");
+				
+				return null;
+			}
 			
 			if(!child.hasOwnProperty("@target"))
 				return function() : void {
-					interpreter.send(child.@event.split("."), child.@id, parseInt(child.@delay));
+					interpreter.send(parseEvent(child), child.@id, parseInt(child.@delay));
 				};
 			
 			if(String(child.@target).slice(0,1) == "#") {
@@ -226,13 +236,13 @@ package scxml {
 				switch(target) {
 					case "_parent":
 						f = function() : void {
-							interpreter.send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data), interpreter.invokeid, doc.dataModel["_parent"]); 
+							interpreter.send(parseEvent(child), child.@id, parseInt(child.@delay), appendParam(child, data), interpreter.invokeid, doc.dataModel["_parent"]); 
 						};
 						
 						break;
 					default:
 						f = function() : void {
-							Invoke(doc.dataModel[target]).send(String(child.@event).split("."), child.@id, parseInt(child.@delay), appendParam(child, data)); 
+							Invoke(doc.dataModel[target]).send(parseEvent(child), child.@id, parseInt(child.@delay), appendParam(child, data)); 
 						};
 						
 						break;
