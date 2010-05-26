@@ -57,7 +57,7 @@ package scxml {
 		
 		private var macroStepEnabled : Boolean = false;
 		
-		private static const logger:ILogger = Log.getLogger("Interpreter");
+		private static var logger:ILogger = Log.getLogger("Interpreter");
 		
 		
 		public function Interpreter(root : IStateClient = null) {
@@ -78,9 +78,12 @@ package scxml {
 			doc = document;
 			dm = doc.dataModel;
 			dm["In"] = In;
+			// sessionid with epoch timestamp
 			dm["_sessionid"] = "sessionid_" + (Date.parse(new Date().toString()) + new Date().milliseconds);
 			
 			dm["_parent"] = optionalParentExternalQueue;
+			if(invokeId)
+				dm["_invokeid"] = invokeId;
 			invId = invokeId;
 			
 			var transition : Transition = new Transition(doc.mainState);
@@ -111,18 +114,22 @@ package scxml {
 					microstep(enabledTransitions);
 			}
 			macroStepEnabled = true;
-			var timer : Timer = new Timer(0, 1);
-			timer.addEventListener(TimerEvent.TIMER, function(evt : Event) : void {mainEventLoop()});
+//			var timer : Timer = new Timer(0, 1);
+//			timer.addEventListener(TimerEvent.TIMER, function(evt : Event) : void {
+//				trace("timer mainEventLoop()", invId);
+//				mainEventLoop();
+//			});
 				
-			if(!externalQueue.isEmpty()) 
-				timer.start();
+			if(!externalQueue.isEmpty())
+				mainEventLoop();
+//				timer.start();
 		}
 		
 		
 		private function onExternalEvent(event : Event) : void {
-//			logger.debug("onExternalEvent", macroStepEnabled, externalQueue);
+//			debug("onExternalEvent", macroStepEnabled, externalQueue);
 			if(!bContinue) {
-				logger.debug("The statemachine has reached it's final state(s) and is no longer accepting events.");
+				debug("The statemachine has reached it's final state(s) and is no longer accepting events.");
 				return;
 			}
 			if(macroStepEnabled)
@@ -139,7 +146,7 @@ package scxml {
             var externalEvent : InterpreterEvent = externalQueue.dequeue(); 
 			
 			var suffix : String = invId != null ? "in interpreter: " + invId : "";
-            logger.debug("external event found: " + externalEvent.name, suffix);
+            debug("external event found: " + externalEvent.name, suffix);
 
             dm["_event"] = externalEvent;
             if(externalEvent.invokeid) {
@@ -200,11 +207,10 @@ package scxml {
 	        if (inFinalState) {
 	            if (invId && dm["_parent"]) 
 	                dm["_parent"].enqueue(new InterpreterEvent(["done", "invoke", invId], {}))
-	            logger.debug( "Exiting interpreter", invId != null ? invId : "");
+	            debug( "Exiting interpreter", invId != null ? invId : "");
 				dispatchEvent(new SCXMLEvent(SCXMLEvent.FINAL_STATE_REACHED));
 			}
 			
-	    //        sendDoneEvent(???)
 		}
 		
 		private function selectEventlessTransitions() : OrderedSet {
@@ -263,6 +269,8 @@ package scxml {
 					}
 				}
 			}
+			if(preempted) 
+				trace("isprempted");
 			return preempted;
 		}
 		
@@ -281,10 +289,11 @@ package scxml {
 		    // Logging
 	    	var config : Array = ArrayUtils.mapProperty(configuration, "id");
 		    if(config.length > 1) {
-			    logger.debug("configuration: [" + config.slice(1).join(", ") + "]");
+			    debug("configuration: [" + config.slice(1).join(", ") + "]");
 		    }
 		    // TODO: revise this
-		    dispatchEvent(new SCXMLEvent(SCXMLEvent.STATE_ENTERED, config[config.length-1], enabledTransitions[0]));
+			var configIds : Array = ArrayUtils.mapProperty(ArrayUtils.filter(isAtomicState, configuration), "id");
+		    dispatchEvent(new SCXMLEvent(SCXMLEvent.STATE_ENTERED, configIds, enabledTransitions[0]));
 		   
 		}
 		
@@ -316,9 +325,9 @@ package scxml {
 				}
 			}
 	        for each(var s3 : IState in statesToExit) {
-	            for each(var content : IExecutable in s.onexit)
+	            for each(var content : IExecutable in s3.onexit)
 	                executeContent(content);
-	            for each(var inv : Invoke in s.invoke)
+	            for each(var inv : Invoke in s3.invoke)
 	                cancelInvoke(inv);
 	            configuration.remove(s3);
 				
@@ -546,11 +555,12 @@ package scxml {
 		}
 		
 		private function invoke(inv : Invoke, extQ : Queue) : void {
-//			logger.debug("starting invoke", inv);
 			dm[inv.invokeid] = inv;
 			inv.addEventListener(InvokeEvent.INIT, invokeListener);
 			inv.addEventListener(InvokeEvent.SEND_RESULT, invokeListener);
 			inv.addEventListener(InvokeEvent.CANCEL, invokeListener);
+			inv.addEventListener(InvokeEvent.ABORT, invokeListener);
+			inv.addEventListener(InvokeEvent.LOADED, invokeListener);
 			inv.start(extQ, inv.invokeid);
 		}
 
@@ -566,8 +576,14 @@ package scxml {
 						evt.push(event.data.lastResult);
 					send(evt, null , NaN, event.data, target.invokeid);
 					break;
+				case InvokeEvent.ABORT:
+					send(["abort", "invoke", target.invokeid], null , NaN, {}, target.invokeid);
+					break;
 				case InvokeEvent.CANCEL:
 					send(["cancel", "invoke", target.invokeid], null , NaN, {}, target.invokeid);
+					break;
+				case InvokeEvent.LOADED:
+					send(["loaded", "invoke", target.invokeid], null , NaN, {}, target.invokeid);
 					break;
 				
 			}
@@ -605,8 +621,7 @@ package scxml {
 		}
 		
 		private function cancelInvoke(inv : Invoke) : void {
-//			dm["#" + inv.invokeid] = null;
-			logger.debug("invoke cancelled", inv.invokeid);
+			debug("invoke cancelled", inv.invokeid);
 			inv.cancel();
 		}
 		
@@ -622,7 +637,7 @@ package scxml {
 			var viewState : String = s.viewstate;
 			if(viewState != null && flexContainer) {
 				flexContainer.currentState = viewState;
-				logger.debug("current viewstate: " + viewState);
+				debug("current viewstate: " + viewState);
 			}
 		}
 		public function isFinished() : Boolean {
@@ -636,6 +651,10 @@ package scxml {
 		
 		public function get dataModel() : Object {
 			return dm;
+		}
+		private function debug(msg : *, ...args : Array) : void {
+			var argArray : Array = ArrayUtils.map(function(n : Number) : String {return "{" + n + "}"}, ArrayUtils.range(0, args.length));
+			logger.debug.apply(null, [msg.toString() + " " + argArray.join(" ")].concat(args));
 		}
 	}
 }

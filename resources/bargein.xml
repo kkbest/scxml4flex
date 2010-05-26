@@ -8,60 +8,25 @@
 		public <top> = hello;
 		]]>	
 		</data>
+		<data id="bargein" expr="true" />
 	</datamodel>
 	<state id="main">
-		<invoke id="agent" type="scxml">
-			<content>
-				<scxml>
-					<state id="root">
-						<invoke id="tts" type="x-tts" />
-						<invoke id="asr" type="x-asr" />
-						
-						<state id="init">
-							<transition event="init.invoke.tts" target="waiting" />
-							<send target="#_parent" event="ready" />
-						</state>
-						
-						<state id="waiting">
-							<transition event="say" target="speaking">
-								<send type="x-tts" target="#tts">
-									<param name="say" expr="_event.data.say" />
-								</send>
-								<send type="x-asr" target="#asr">
-									<param name="_event.data.grammar" />
-								</send>
-							</transition>
-						</state>
-						<state id="speaking">
-							<transition event="result.invoke.asr">
-								<send event="abort" type="x-tts" target="#tts"  />
-								<send target="#_parent" event="result.invoke.asr">
-									<param name="lastResult" expr="_event.data.lastResult" />
-								</send>
-							</transition>
-							
-							<transition event="result.invoke.tts" target="waiting" />
-						</state>
-					</state>
-				</scxml>
-			</content>
-		</invoke>
+		<invoke id="agent" type="scxml" src="resources/dialog_agent.xml" />
 
 		<state id="initializing">
 			<transition event="ready" target="talk">
-				<log expr="'init.invoke.tts transition taken'" />
+				<log expr="'ready'" />
 			</transition>
 			
 		</state>
 		<state id="talk">
 			<onentry>
-				<send target="#agent" event="prompt">
+				<send target="#agent" event="prompt" namelist="bargein">
 					<param name="say" expr="'hello, please interrupt me while I have a long exposition about the theory of everything and then go on to talk some more about what\'s on my mind.'" />
 					<param name="grammar" />
 				</send>
 			</onentry>
-			<transition event="result.invoke.tts" target="talk"/>
-			<transition event="result.invoke.asr" >
+			<transition event="result.invoke.asr">
 				<log expr="'you said: ' + _event.data.lastResult" />
 			</transition>
 		</state>

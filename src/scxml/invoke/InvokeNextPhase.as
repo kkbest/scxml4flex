@@ -57,10 +57,6 @@ package scxml.invoke {
 		private function onCategoryResult(event : ResultEvent) : void {
 //			debug("languageResult", event.result);
 //			debug("languageResult is string", event.result is String);
-			
-			
-			
-			
 		}
 		private function onLanguageResult(event : ResultEvent) : void {
 			debug("languageResult", event.result);
@@ -79,7 +75,7 @@ package scxml.invoke {
 		override public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, toQueue : Queue = null) : void {
 			switch(eventName[0]) {
 				case "getNewsItems":
-					newsItemsResponder.token = webservice.GetLatestNewsItems("", "SightCity_CNN", 10);
+					newsItemsResponder.token = webservice.GetLatestNewsItems("", "SightCity_CNN", 2);
 					break;
 				case "getCategories":
 //				categoryResponder.token = webservice.GetAvailableCategories(data.lang);
@@ -98,7 +94,7 @@ package scxml.invoke {
 		}
 		
 		private function onServiceResult(event : ResultEvent) : void {
-			debug("result", event.result);
+			logger.info("result " + event.result);
 //			debug("result messageId", event.messageId);
 //			for( var i : String in event.message.headers)
 //				debug("result headers", i, event.message.headers[i]);

@@ -9,6 +9,9 @@ package scxml.invoke {
 	import flash.media.SoundChannel;
 	import flash.net.SharedObject;
 	
+	import mx.logging.ILogger;
+	import mx.logging.Log;
+	
 	import scxml.events.InvokeEvent;
 	
 	import util.ArrayUtils;
@@ -24,6 +27,10 @@ package scxml.invoke {
 		private var toSay : String;
 		private var _abort : Boolean = false;
 		private var soundPlaying : SoundChannel;
+		
+		private var logger:ILogger = Log.getLogger("InvokeTTS");
+		
+		private var _time : Number;
 		
 		public function InvokeTTS()	{
 			setupVaas();
@@ -47,11 +54,13 @@ package scxml.invoke {
 				_abort = false;
 				return;
 			}
+			logger.info("sound loaded in (ms):" + ((Date.parse(new Date().toString()) + new Date().milliseconds) - _time)); 
 			var target : BasicVaas = BasicVaas(event.target);
 			_lastResult = target.requestedSound;
 			soundPlaying = target.requestedSound.play(); 
 			soundPlaying.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
 			staticMsgs.setProperty(toSay, vaas.requestedId);
+			dispatchEvent(new InvokeEvent(InvokeEvent.LOADED));
 		}
 		
 		private function onPlaybackComplete(event : Event) : void {
@@ -61,36 +70,43 @@ package scxml.invoke {
 		}
 		
 		private function onVaasError(event:Event) : void {
-			trace("an error occured : " +  BasicVaas(event.target).lastError);
+			logger.error(BasicVaas(event.target).lastError);
 		}
 		
-		private function abort() : void {
-			trace("abort tts");
+		override protected function abort() : void {
+			debug("abort");
 			if(!soundPlaying) return;
 			_abort = true;
 			soundPlaying.stop();
 			soundPlaying.removeEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
 			soundPlaying = null;
-			
-			
-			dispatchEvent(new InvokeEvent(InvokeEvent.ABORT));
+			super.abort();
 		}
 		
 		override public function send(eventName : Object, sendId : String = null, delay : Number = 0, data : Object = null, toQueue : Queue = null) : void {
-			if(ArrayUtils.member("abort", eventName as Array)) {
+			if(eventName is Array && eventName[0] == "abort") {
 				abort();
 				return;
 			}
-			trace("tts send");
+			debug("tts say", data);
 			for(var i : String in data)
-				trace(i, data[i]);
+				debug("key:", i, "value:", data[i]);
+			if(!data["say"] || data["say"] == "") throw new Error("The say variable was empty");
 			toSay = data["say"];
-			if(staticMsgs.data[toSay] != null)
+			_time = Date.parse(new Date().toString()) + new Date().milliseconds;
+			if(staticMsgs.data[toSay] != null) {
+				logger.info("found cached sound: " + toSay);
 				vaas.retrieveMessage(staticMsgs.data[toSay]);
-			else
+			}
+			else {
+				logger.warn("no cached sound: " + toSay);
 				vaas.generateMessage("peter22k", data["say"]);
+			}
 			
 		}
-		
+		protected function debug(msg : String, ...args : Array) : void {
+			var argArray : Array = ArrayUtils.map(function(n : Number) : String {return "{" + n + "}"}, ArrayUtils.range(0, args.length));
+			logger.debug.apply(null, [msg + " " + argArray.join(" ")].concat(args));
+		}	
 	}
 }
