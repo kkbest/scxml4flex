@@ -294,6 +294,17 @@ package scxml {
 		    // TODO: revise this
 			var configIds : Array = ArrayUtils.mapProperty(ArrayUtils.filter(isAtomicState, configuration), "id");
 		    dispatchEvent(new SCXMLEvent(SCXMLEvent.STATE_ENTERED, configIds, enabledTransitions[0]));
+			
+			function hasViewstate(s : IState) : Boolean {
+				return s.viewstate != "" && s.viewstate != null;
+			}
+			
+			var aHasViewstate : Array = ArrayUtils.filter(hasViewstate, configuration);
+			
+			if(aHasViewstate.length > 1)
+				logger.error("There were two states with a viewstate property in the configuration simultaneously.");
+			else
+				switchFlexState(aHasViewstate[0]);
 		   
 		}
 		

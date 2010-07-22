@@ -29,7 +29,7 @@ package scxml {
 		}
 		
 		public function set source(xml : XML) : void {
-			trace("source");
+			trace("source", xml);
 			_source = xml;
 			compiler = new Compiler(interpreter);  
 			
