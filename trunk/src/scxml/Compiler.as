@@ -14,10 +14,7 @@ package scxml {
 	
 	import scxml.error.SCXMLValidationError;
 	import scxml.invoke.Invoke;
-	import scxml.invoke.InvokeASR;
-	import scxml.invoke.InvokeNextPhase;
 	import scxml.invoke.InvokeSCXML;
-	import scxml.invoke.InvokeTTS;
 	import scxml.nodes.*;
 	
 	import util.ArrayUtils;
@@ -115,15 +112,6 @@ package scxml {
 									inv.autoforward = true;
 								invoke = inv;
 								
-								break;
-							case "x-tts":
-								invoke = new InvokeTTS();
-								break;
-							case "x-asr":
-								invoke = new InvokeASR();
-								break;
-							case "x-acapela-nextphase":
-								invoke = new InvokeNextPhase();
 								break;
 						}
 						
