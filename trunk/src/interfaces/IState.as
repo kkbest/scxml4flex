@@ -20,7 +20,7 @@ package interfaces {
 		function get viewstate() : String;
 		function get state() : Array;
 		function get parallel() : Array;
-		function get final() : Array;
+		function get finalArray() : Array;
 		
 		
 //		function get initExec() : IExecutable;

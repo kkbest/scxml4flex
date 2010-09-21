@@ -296,14 +296,15 @@ package scxml {
 		    dispatchEvent(new SCXMLEvent(SCXMLEvent.STATE_ENTERED, configIds, enabledTransitions[0]));
 			
 			function hasViewstate(s : IState) : Boolean {
-				return s.viewstate != "" && s.viewstate != null;
+				logger.debug("hasViewstate " + String(s.viewstate != null));
+				return s.viewstate != null;
 			}
 			
 			var aHasViewstate : Array = ArrayUtils.filter(hasViewstate, configuration);
 			
 			if(aHasViewstate.length > 1)
 				logger.error("There were two states with a viewstate property in the configuration simultaneously.");
-			else
+			else if(aHasViewstate.length > 0)
 				switchFlexState(aHasViewstate[0]);
 		   
 		}
@@ -532,12 +533,12 @@ package scxml {
 		
 		
 		private function isAtomicState(s : IState) : Boolean {
-			return s.state.length + s.parallel.length + s.final.length == 0;
+			return s.state.length + s.parallel.length + s.finalArray.length == 0;
 		}
 		
 		
 		private function isCompoundState(s : Object) : Boolean {
-		    return s.state.length + s.parallel.length + s.final.length > 0;
+		    return s.state.length + s.parallel.length + s.finalArray.length > 0;
 		}
 		
 		private function documentOrder(s1 : IState, s2 : IState) : Number {

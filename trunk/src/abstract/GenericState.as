@@ -75,7 +75,7 @@ package abstract {
 		public function get state() : Array {
 			return stateArray;
 		}
-		public function get final() : Array {
+		public function get finalArray() : Array {
 			return finalStates;
 		}
 		public function get parallel() : Array {

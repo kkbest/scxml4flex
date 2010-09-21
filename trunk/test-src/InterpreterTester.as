@@ -1,34 +1,30 @@
-package flexUnitTests {
-	import flash.display.FrameLabel;
-	import flash.events.Event;
-	import flash.utils.Timer;
-	
+package {
 	import flexunit.framework.Assert;
-	
-	import org.flexunit.async.Async;
-	
-	import scxml.Interpreter;
+
 	import scxml.SCXML;
 	import scxml.events.SCXMLEvent;
+
+	import org.flexunit.async.Async;
+	
 
 	public class InterpreterTester {		
 		
 		private var interpreter : SCXML;
 		private var optionalCond : Function;
 		
-		[Embed(source="../../unittest_xml/history.xml")]
+		[Embed(source="../unittest_xml/history.xml")]
 		protected const HistoryXML : Class;
-		[Embed(source="../../unittest_xml/factorial.xml")]
+		[Embed(source="../unittest_xml/factorial.xml")]
 		protected const FacXML : Class;
-		[Embed(source="../../unittest_xml/colors.xml")]
+		[Embed(source="../unittest_xml/colors.xml")]
 		protected const ColorXML : Class;
-		[Embed(source="../../unittest_xml/parallel.xml")]
+		[Embed(source="../unittest_xml/parallel.xml")]
 		protected const ParallelXML : Class;
-		[Embed(source="../../unittest_xml/all_configs.xml")]
+		[Embed(source="../unittest_xml/all_configs.xml")]
 		protected const ConfigXML : Class;
-		[Embed(source="../../unittest_xml/issue_626.xml")]
+		[Embed(source="../unittest_xml/issue_626.xml")]
 		protected const Issue626XML : Class;
-		[Embed(source="../../unittest_xml/twolock_door.xml")]
+		[Embed(source="../unittest_xml/twolock_door.xml")]
 		protected const TwolockXML : Class;
 		
 		[Before(async)]
