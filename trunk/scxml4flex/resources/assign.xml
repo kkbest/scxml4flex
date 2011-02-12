@@ -1,0 +1,17 @@
+<scxml initial="s1" >
+	<datamodel>
+		<data id="x" expr="1"/>
+	</datamodel>  
+	<state id="s1">
+		<onentry>
+			<script>
+				x = x + 5;
+			</script>
+			<log expr="x" />
+		</onentry>
+        <transition cond="x &gt; 1" target="result">
+			<log label="Result" expr="x"/>
+		</transition>
+    </state>
+   <final id="result"/>
+</scxml>
