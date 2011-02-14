@@ -11,7 +11,7 @@
 			import org.apache.commons.scxml.model.SCXML;
 			import org.apache.commons.scxml.model.events.SCXMLEvent;
 			
-			[Embed(source="../unittest_xml/factorial.xml")]
+			[Embed(source="../resources/assign.xml")]
 			protected const scxmlDoc : Class;
 			private var engine:SCXML=null;
 			
@@ -20,11 +20,18 @@
 				var xml:XML=XML(scxmlDoc.data);
 				document_show.text=xml;
 				engine.source=xml;
+				
 				engine.addEventListener(SCXMLEvent.STATE_ENTERED,listener);
+				engine.addEventListener(SCXMLEvent.FINAL_STATE_REACHED,finished);
 				engine.start();
 			}
 			
+			public function finished(event:SCXMLEvent):void{
+				trace("Event:"+event.toString());
+			}
+			
 			public function listener(event:SCXMLEvent):void{
+				trace("State:"+event.stateId.toString());
 				console.text=event.stateId.toString();
 			}
 

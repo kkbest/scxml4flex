@@ -4,6 +4,7 @@ package org.apache.commons.scxml.model {
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import flash.utils.getDefinitionByName;
 	
 	import org.apache.commons.scxml.interfaces.IInterpreter;
 	
@@ -16,6 +17,9 @@ package org.apache.commons.scxml.model {
 	import org.apache.commons.scxml.model.invoke.Invoke;
 	import org.apache.commons.scxml.model.invoke.InvokeSCXML;
 	import org.apache.commons.scxml.model.nodes.*;
+	import org.apache.commons.scxml.model.nodes.actions.*;
+	import org.apache.commons.scxml.model.nodes.actions.ExecuteContentRegister;
+	import org.apache.commons.scxml.datastructures.CustomActionClassMap;
 	
 	import org.apache.commons.scxml.util.ArrayUtils;
 	
@@ -128,7 +132,7 @@ package org.apache.commons.scxml.model {
 										for each(var param : XML in paramNodes)
 											doc.dataModel[String(param.@name)] = doc.dataModel["_event"].data[String(param.@name)];
 									}
-								
+
 								];
 						}
 						break;
@@ -143,45 +147,62 @@ package org.apache.commons.scxml.model {
 		    var fArray : Array = [];
 	        for each(var child : XML in node.children()) {
 	        	var nodeName : String = String(child.localName());
-//	        	peculiar scope issue hack.
+				/*
+				If we want to use ActionScript reflection mechanism, we must make sure the imported class includes in comiled SWF file
+				Or we can get #1065 error, so, if we catch any error, we use var aic:ActionImportClass = null to package the aim classes
+				in to compiled SWF file
+				*/
+				var register:ExecuteContentRegister =new ExecuteContentRegister();
 	        	var getFunction : Function = function(child : XML) : Function {
 	        		var f : Function;
-		            switch(nodeName) {
-		            	case "log":
-		            		var label : String = child.hasOwnProperty("@label") ? child.@label + ": " : "Log: ";
-	            			f = function() : void {
-	            				trace(label + evalExpr(child.@expr));
-            				};
-		            		break; 
-	            		case "assign":
-	            			f = function() : void {
-								var expression : String = child.hasOwnProperty("@expr") ? child.@expr : child.text.toString();
-								doc.dataModel[String(child.@location)] = evalExpr(expression)
-							};
-	            			break;
-	        			case "raise":
-	        				f = function() : void {interpreter.raiseFunction(child.@event.split("."))};
-	        				break;
-	    				case "script":
-							var code : String = child.toString();
-	        				f = function() : void {
-								evalExpr(code);
-							};
-	    					break;
-						case "cancel":
-							f = function() : void {interpreter.cancelEvent(child.@sendid)};
-							break;
-						case "param" :
-							throw new Error("param can currently only be the child of a send or invoke tag");
-						case "send":
-							f = parseSend(child);
-							break;
-	            		default:
-	            			throw new SCXMLValidationError("Parsing failed: a " + 
-	            				nodeName + " node may not be the child of a " + node.localName() + " node.");
-							break;
+					if(nodeName=="log"||nodeName=="assign"||nodeName=="raise"||nodeName=="script"){
+						for(var i:int=0;i<register.executeContentList.length;i++){
+							var eachExec:CustomActionClassMap=register.executeContentList[i];
+							if(eachExec.getElementName()==nodeName){
+								var ClassReference:Class = getDefinitionByName(eachExec.getClassPath()) as Class;
+								var action:ExecuteContent = new ClassReference() as ExecuteContent;
+								f=action.execute(child,doc,interpreter);
+							}
 						}
-		        	
+						
+					}else{
+						switch(nodeName) {
+							/*case "log":
+								var ClassReference:Class = getDefinitionByName("org.apache.commons.scxml.model.nodes.actions.LogAction") as Class;
+								var action:ExecuteContent = new ClassReference() as ExecuteContent;
+								f=action.execute(child,doc);
+								break; 
+							case "assign":
+								f = function() : void {
+									var expression : String = child.hasOwnProperty("@expr") ? child.@expr : child.text.toString();
+									doc.dataModel[String(child.@location)] = evalExpr(expression)
+								};
+								break;
+							case "raise":
+							f = function() : void {interpreter.raiseFunction(child.@event.split("."))};
+							break;
+							case "script":
+							var code : String = child.toString();
+							f = function() : void {
+							evalExpr(code);
+							};
+							break;
+							*/
+							case "cancel":
+								f = function() : void {interpreter.cancelEvent(child.@sendid)};
+								break;
+							case "param" :
+								throw new Error("param can currently only be the child of a send or invoke tag");
+							case "send":
+								f = parseSend(child);
+								break;
+							default:
+								throw new SCXMLValidationError("Parsing failed: a " + 
+									nodeName + " node may not be the child of a " + node.localName() + " node.");
+								break;
+						}
+					}
+		            
 		        	return f;
 	        	};
 	        	fArray.push(getFunction(child));
