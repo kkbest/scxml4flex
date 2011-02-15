@@ -1,27 +1,24 @@
 package org.apache.commons.scxml.model {
-	import org.apache.commons.scxml.abstract.GenericState;
-	
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.getDefinitionByName;
 	
-	import org.apache.commons.scxml.interfaces.IInterpreter;
-	
 	import mx.logging.ILogger;
 	import mx.logging.Log;
 	
-	import r1.deval.D;
-	
+	import org.apache.commons.scxml.abstract.GenericState;
+	import org.apache.commons.scxml.datastructures.CustomActionClassMap;
+	import org.apache.commons.scxml.interfaces.IInterpreter;
 	import org.apache.commons.scxml.model.error.SCXMLValidationError;
 	import org.apache.commons.scxml.model.invoke.Invoke;
 	import org.apache.commons.scxml.model.invoke.InvokeSCXML;
 	import org.apache.commons.scxml.model.nodes.*;
 	import org.apache.commons.scxml.model.nodes.actions.*;
 	import org.apache.commons.scxml.model.nodes.actions.ExecuteContentRegister;
-	import org.apache.commons.scxml.datastructures.CustomActionClassMap;
-	
 	import org.apache.commons.scxml.util.ArrayUtils;
+	
+	import r1.deval.D;
 	
 	
 	public class Compiler extends EventDispatcher {
@@ -39,7 +36,7 @@ package org.apache.commons.scxml.model {
 		}
 		
 		
-		private function get_sid(node : XML) : String {
+		public function get_sid(node : XML) : String {
 	        if (!node.hasOwnProperty("@id") || node.@id == "") {
 	        	var id : String = "_" + node.localName() + "_" + ++counter;
 	        	node.@id = id;
@@ -65,85 +62,23 @@ package org.apache.commons.scxml.model {
 				var nodeName : String = String(node.localName());
 				var pId : String = node.parent().@id;
 				var parentState : GenericState = doc.getState(pId);
-				switch(nodeName) {
-					case "state":
-						var newState : SCXMLState = doc.pushState(new SCXMLState(get_sid(node), parentState, i)) as SCXMLState;
-						if(node.hasOwnProperty("@viewstate"))
-							newState.viewstate = String(node.@viewstate);
-						if(isCompoundState(node))
-							newState.initial = parseInitial(node);
-						break;
-					case "transition":	
-						if(String(node.parent().localName()) != "initial") {
-							var transition : Transition = parseTransition(node, parentState, i);
-							parentState.addTransition(transition);
-						} 
-						break;
-					case "final":
-						doc.pushState(new Final(get_sid(node), parentState, i));
-						break;
-					case "history":
-						var history : History = doc.pushHistory(new History(get_sid(node), parentState, i));
-						history.type = node.@type;
-						break;
-					case "parallel":
-						var parallelState : GenericState = doc.pushState(new Parallel(get_sid(node), parentState, i));
-						break;
-					case "onentry":
-						var onEntry : Exec = new Exec(makeExecContent(node));
-						parentState.addOnEntry(onEntry);
-						break;
-					case "onexit":
-						var onExit : Exec = new Exec(makeExecContent(node));
-						parentState.addOnExit(onExit);
-						break;
-					case "data":
-						if(node.hasOwnProperty("@expr"))
-							doc.dataModel[String(node.@id)] = evalExpr(node.@expr);
-						else
-							doc.dataModel[String(node.@id)] = node.toString();
-						break;
-					case "invoke":
-						var invoke : Invoke;
-						switch(String(node.@type)) {
-							case "scxml":
-								var inv : InvokeSCXML =  new InvokeSCXML();
-								if(node.hasOwnProperty("@src"))
-									inv.loadFromSource(node.@src);
-								else if(node.hasOwnProperty("content"))
-									inv.content = XML(node.content.scxml.toString());
-								if(node.hasOwnProperty("@autoforward") && node.@autoforward == "true")
-									inv.autoforward = true;
-								invoke = inv;
-								
-								break;
-						}
-						
-						invoke.invokeid = node.@id;
-						invoke.type = node.@type;
-						parentState.addInvoke(invoke);
-						if(node.hasOwnProperty("finalize") && XML(node.finalize).children().length() > 0) {
-							invoke.finalizeArray = makeExecContent(XML(node.finalize));
-						} else if(node.hasOwnProperty("finalize") && node.hasOwnProperty("param")) {
-							var paramNodes : XMLList = node.(localName() == "param" && !hasOwnProperty("@expr"));
-							
-							invoke.finalizeArray = [
-									function() : void {
-										for each(var param : XML in paramNodes)
-											doc.dataModel[String(param.@name)] = doc.dataModel["_event"].data[String(param.@name)];
-									}
-
-								];
-						}
-						break;
-					
-				}
 				
+				//state SCXML element parse job
+				var register:ElementRegister=new ElementRegister();
+				for(var m:int=0;m<register.elementsList.length;m++){
+					var eachEle:CustomActionClassMap=register.elementsList[m];
+					if(eachEle.getElementName()==nodeName){
+						var ClassReference:Class = getDefinitionByName(eachEle.getClassPath()) as Class;
+						var action:ElementContent = new ClassReference() as ElementContent;
+						action.compile(node,parentState,doc,this,i);
+						break;
+					}
+				}	
 			}
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
-		private function makeExecContent(node : XML) : Array {
+		public function makeExecContent(node : XML) : Array {
 		    var fArray : Array = [];
 	        for each(var child : XML in node.children()) {
 	        	var nodeName : String = String(child.localName());
@@ -154,114 +89,33 @@ package org.apache.commons.scxml.model {
 				*/
 				var register:ExecuteContentRegister =new ExecuteContentRegister();
 	        	var getFunction : Function = function(child : XML) : Function {
-	        		var f : Function;
-					if(nodeName=="log"||nodeName=="assign"||nodeName=="raise"||nodeName=="script"){
-						for(var i:int=0;i<register.executeContentList.length;i++){
-							var eachExec:CustomActionClassMap=register.executeContentList[i];
-							if(eachExec.getElementName()==nodeName){
-								var ClassReference:Class = getDefinitionByName(eachExec.getClassPath()) as Class;
-								var action:ExecuteContent = new ClassReference() as ExecuteContent;
-								f=action.execute(child,doc,interpreter);
-							}
-						}
-						
-					}else{
-						switch(nodeName) {
-							/*case "log":
-								var ClassReference:Class = getDefinitionByName("org.apache.commons.scxml.model.nodes.actions.LogAction") as Class;
-								var action:ExecuteContent = new ClassReference() as ExecuteContent;
-								f=action.execute(child,doc);
-								break; 
-							case "assign":
-								f = function() : void {
-									var expression : String = child.hasOwnProperty("@expr") ? child.@expr : child.text.toString();
-									doc.dataModel[String(child.@location)] = evalExpr(expression)
-								};
-								break;
-							case "raise":
-							f = function() : void {interpreter.raiseFunction(child.@event.split("."))};
+	        		var f : Function = null;
+					var match:Boolean = false;
+					for(var i:int=0;i<register.executeContentList.length;i++){
+						var eachExec:CustomActionClassMap=register.executeContentList[i];
+						if(eachExec.getElementName()==nodeName){
+							var ClassReference:Class = getDefinitionByName(eachExec.getClassPath()) as Class;
+							var action:ExecuteContent = new ClassReference() as ExecuteContent;
+							f=action.execute(child,doc,interpreter);
+							match = true;
 							break;
-							case "script":
-							var code : String = child.toString();
-							f = function() : void {
-							evalExpr(code);
-							};
-							break;
-							*/
-							case "cancel":
-								f = function() : void {interpreter.cancelEvent(child.@sendid)};
-								break;
-							case "param" :
-								throw new Error("param can currently only be the child of a send or invoke tag");
-							case "send":
-								f = parseSend(child);
-								break;
-							default:
-								throw new SCXMLValidationError("Parsing failed: a " + 
-									nodeName + " node may not be the child of a " + node.localName() + " node.");
-								break;
 						}
 					}
-		            
-		        	return f;
+						
+					//Bad element, return empty function
+					if(!match){
+						//throw new SCXMLValidationError("Parsing failed: a " +nodeName + " node may not be the child of a " + node.localName() + " node.");
+						trace("Parsing failed: a " + 
+							nodeName + " node may not be the child of a " + node.localName() + " node.");
+						f=function():void{}; 
+					} 
+					return f;
+					
 	        	};
 	        	fArray.push(getFunction(child));
 				
 			}
 	        return fArray;
-		}
-		
-		private function parseSend(child : XML) : Function {
-			var f : Function;
-			var type : String = child.hasOwnProperty("@type") ? child.@type : "scxml";
-			var data : Object = {};
-			function parseEvent(node : XML) : Array {
-				if(node.hasOwnProperty("@event"))
-					return String(node.@event).split(".");
-				else if(node.hasOwnProperty("@eventexpr")) 
-					return String(evalExpr(String(node.@eventexpr))).split(".");
-				
-				return null;
-			}
-			
-			if(!child.hasOwnProperty("@target"))
-				return function() : void {
-					interpreter.send(parseEvent(child), child.@id, parseInt(child.@delay));
-				};
-			
-			if(String(child.@target).slice(0,1) == "#") {
-				var target : String = String(child.@target).slice(1);
-				switch(type) {
-					case "scxml":
-						break;
-					case "x-asr":
-						if(child.hasOwnProperty("content"))
-							data["grammar"] = grammarCleanup(child.content.toString());
-						break;
-					case "x-tts":
-						break;
-				}
-				
-				switch(target) {
-					case "_parent":
-						f = function() : void {
-							interpreter.send(parseEvent(child), child.@id, parseInt(child.@delay), appendParam(child, data), interpreter.invokeid, doc.dataModel["_parent"]); 
-						};
-						
-						break;
-					default:
-						f = function() : void {
-							Invoke(doc.dataModel[target]).send(parseEvent(child), child.@id, parseInt(child.@delay), appendParam(child, data)); 
-						};
-						
-						break;
-					
-				}
-				
-			}
-			
-			if(f == null) throw new Error("Something went wrong in parsing of send");
-			return f;
 		}
 		
 		private function grammarCleanup(input : String) : String {
@@ -303,24 +157,7 @@ package org.apache.commons.scxml.model {
 				evalExpr(XML(node.script).toString());
 		}
 		
-		private function parseTransition(node : XML, source : GenericState, i : Number) : Transition {
-			var t : Transition = new Transition(source);
-			t.setExecFunctions(makeExecContent(node));
-			if(node.hasOwnProperty("@cond"))
-				t.cond = getExprFunction(node.@cond);
-			if(node.hasOwnProperty("@target"))
-				t.target = String(node.@target).split(" ");
-			if(node.hasOwnProperty("@event"))
-				t.event = ArrayUtils.map(function(x : String) : Array {return x.replace(/(.*)\.\*$/, "$1").split(".")}, node.@event.split(" ")); 
-			
-			return t;
-		}
-		
-		private function isCompoundState(node : XML) : Boolean {
-			return node.hasOwnProperty("state") || node.hasOwnProperty("parallel") || node.hasOwnProperty("final");
-		}
-		
-		private function parseInitial(node : XML) : Initial {
+		public function parseInitial(node : XML) : Initial {
 			var initial : Initial;
 			if(node.hasOwnProperty("@initial")) {
 				initial = new Initial(String(node.@initial).split(" "));
@@ -332,18 +169,17 @@ package org.apache.commons.scxml.model {
 				var childNodes : XMLList = node.children().(ArrayUtils.member(localName(), ["state", "parallel", "final"]));
 				initial = new Initial([String(get_sid(childNodes[0]))]);
 			}
-			
 			return initial;
 		}
 		
-		private function getExprFunction(expr : String) : Function {
+		public function getExprFunction(expr : String) : Function {
 			function f() : * {
 				return D.eval(expr, doc.dataModel); 
 			}
 			return f;
 		}
 		
-		private function evalExpr(expr : String) : * {
+		public function evalExpr(expr : String) : * {
 			return D.eval(expr, doc.dataModel);
 		}
 		

@@ -400,7 +400,7 @@ package org.apache.commons.scxml.model {
 			if(isHistoryState(s)) {
 				if(historyValue[s.id]) { 
 				    for each(var s0 : IState in historyValue[s.id]) 
-				        addStatesToEnter(s0, s, statesToEnter, statesForDefaultEntry);
+				        addStatesToEnter(s0, root, statesToEnter, statesForDefaultEntry);
 				} else {
 				    for each(var t : Transition in s.transition) 
 				        for each(var s1 : IState in getTargetStates(t.target)) 
