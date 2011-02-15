@@ -1,4 +1,5 @@
 #summary Tell us what ActionScript is.
+#labels Featured
 
 = Introduction =
 
