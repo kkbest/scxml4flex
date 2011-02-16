@@ -10,15 +10,20 @@
 		<![CDATA[
 			import org.apache.commons.scxml.model.SCXML;
 			import org.apache.commons.scxml.model.events.SCXMLEvent;
+			import org.apache.commons.scxml.model.nodes.actions.CustomAction;
 			
-			[Embed(source="../resources/assign.xml")]
+			[Embed(source="../resources/custom-hello-world.xml")]
 			protected const scxmlDoc : Class;
 			private var engine:SCXML=null;
 			
 			public function initPage():void {
+				var customActionList:Array = new Array();
+				customActionList.push(new CustomAction("http://my.custom-actions.domain/CUSTOM","hello",new Hello()));
+				
 				engine= new SCXML();
 				var xml:XML=XML(scxmlDoc.data);
 				document_show.text=xml;
+				engine.addCustomAction(customActionList);
 				engine.source=xml;
 				
 				engine.addEventListener(SCXMLEvent.STATE_ENTERED,listener);
