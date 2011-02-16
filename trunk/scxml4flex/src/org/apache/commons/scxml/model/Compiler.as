@@ -1,5 +1,6 @@
 package org.apache.commons.scxml.model {
 	import flash.errors.IllegalOperationError;
+	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.getDefinitionByName;
@@ -25,6 +26,7 @@ package org.apache.commons.scxml.model {
 		private var doc : SCXMLDocument;
 		private var counter : int = 0;
 		private var interpreter : IInterpreter;
+		private var customActionList:Array;
 		
 		private static const logger:ILogger = Log.getLogger("Compiler");
 		
@@ -35,6 +37,9 @@ package org.apache.commons.scxml.model {
 			interpreter = i;
 		}
 		
+		public function setCustomAction(caList:Array):void{
+			customActionList=caList;
+		}
 		
 		public function get_sid(node : XML) : String {
 	        if (!node.hasOwnProperty("@id") || node.@id == "") {
@@ -87,12 +92,11 @@ package org.apache.commons.scxml.model {
 				Or we can get #1065 error, so, if we catch any error, we use var aic:ActionImportClass = null to package the aim classes
 				in to compiled SWF file
 				*/
-				var register:ExecuteContentRegister =new ExecuteContentRegister();
 	        	var getFunction : Function = function(child : XML) : Function {
 	        		var f : Function = null;
 					var match:Boolean = false;
-					for(var i:int=0;i<register.executeContentList.length;i++){
-						var eachExec:CustomActionClassMap=register.executeContentList[i];
+					for(var i:int=0;i<ExecuteContentRegister.executeContentList.length;i++){
+						var eachExec:CustomActionClassMap=ExecuteContentRegister.executeContentList[i];
 						if(eachExec.getElementName()==nodeName){
 							var ClassReference:Class = getDefinitionByName(eachExec.getClassPath()) as Class;
 							var action:ExecuteContent = new ClassReference() as ExecuteContent;
@@ -101,11 +105,30 @@ package org.apache.commons.scxml.model {
 							break;
 						}
 					}
+					//Parse CustomAction elements
+					if(!match){
+						var namespace:String=String(child.namespace());
+						for(var k:int=0;k<customActionList.length;k++){
+							var ca:CustomAction=customActionList[k];
+							if(namespace==ca.getNamespaceURI()&&nodeName==ca.getLocalName()){
+								try{
+									var CustomClassReference:Class = ca.getActionClass();
+									var customAction:ExecuteContent = new CustomClassReference() as ExecuteContent;
+									f=customAction.execute(child,doc,interpreter);
+									match = true;
+									break;
+								}catch(e:Error){
+									trace("Bad CustomAction Element, it must implements interface ExecuteContent");
+									throw new ErrorEvent("Bad CustomAction Element, it must implements interface ExecuteContent");
+								}
+							}
+						}
+					}
 						
 					//Bad element, return empty function
 					if(!match){
 						//throw new SCXMLValidationError("Parsing failed: a " +nodeName + " node may not be the child of a " + node.localName() + " node.");
-						trace("Parsing failed: a " + 
+						trace("Parsing failed: a " +child.namespace()+ 
 							nodeName + " node may not be the child of a " + node.localName() + " node.");
 						f=function():void{}; 
 					} 

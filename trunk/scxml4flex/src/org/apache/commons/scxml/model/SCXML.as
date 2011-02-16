@@ -1,13 +1,11 @@
 package org.apache.commons.scxml.model {
-	import org.apache.commons.scxml.datastructures.Queue;
-	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
-	import org.apache.commons.scxml.interfaces.IInterpreter;
-	
 	import mx.core.IStateClient;
 	
+	import org.apache.commons.scxml.datastructures.Queue;
+	import org.apache.commons.scxml.interfaces.IInterpreter;
 	import org.apache.commons.scxml.model.events.SCXMLEvent;
 	
 	[Event(name="finalStateReached", type="org.apache.commons.scxml.model.events.SCXMLEvent")]
@@ -21,6 +19,7 @@ package org.apache.commons.scxml.model {
 		private var compiler : Compiler;
 		private var interpreter : IInterpreter;
 		private var _source : XML;
+		private var customActionList:Array = null;
 		
 		public function SCXML() {
 			interpreter = new Interpreter();
@@ -28,10 +27,15 @@ package org.apache.commons.scxml.model {
 			interpreter.addEventListener(SCXMLEvent.STATE_ENTERED, onStateEntered);
 		}
 		
+		public function addCustomAction(caList:Array):void{
+			customActionList=caList;
+		}
+		
 		public function set source(xml : XML) : void {
 			trace("source", xml);
 			_source = xml;
-			compiler = new Compiler(interpreter);  
+			compiler = new Compiler(interpreter);
+			if(customActionList!=null) compiler.setCustomAction(customActionList);
 			
 			compiler.parse(xml);
 		}

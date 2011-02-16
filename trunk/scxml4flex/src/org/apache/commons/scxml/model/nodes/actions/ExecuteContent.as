@@ -5,6 +5,6 @@ package org.apache.commons.scxml.model.nodes.actions
 	
 	public interface ExecuteContent
 	{
-		function execute(child : XML,doc : SCXMLDocument,interpreter : IInterpreter):Function;
+		function execute(child : XML,doc : SCXMLDocument, interpreter : IInterpreter):Function;
 	}
 }
