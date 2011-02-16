@@ -1,4 +1,3 @@
-<?xml version="1.0"?>
 <scxml initial="s1">
 	<state id="s1">
 		<invoke id="i" type="scxml" 

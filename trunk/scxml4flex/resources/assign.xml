@@ -7,11 +7,16 @@
 			<script>
 				x = x + 5;
 			</script>
-			<log expr="x" />
 		</onentry>
-        <transition cond="x &gt; 1" target="result">
-			<log label="Result" expr="x"/>
+        <transition cond="x &gt; 1" target="print">
+        	<log label="Transition Log:" expr="x"/>
 		</transition>
+    </state>
+    <state id="print">
+    	<onexit>
+    		<log label="Result" expr="x"/>
+    	</onexit>
+    	<transition event="result" target="result" />	
     </state>
    <final id="result"/>
 </scxml>

@@ -1,4 +1,3 @@
-<?xml version="1.0"?>
 <scxml initial="main">
 	<datamodel>
 		<data id="grammar">
@@ -11,7 +10,7 @@
 		<data id="bargein" expr="true" />
 	</datamodel>
 	<state id="main">
-		<invoke id="agent" type="scxml" src="resources/dialog_agent.xml" />
+		<invoke id="agent" type="scxml" src="../resources/dialog_agend.xml" />
 
 		<state id="initializing">
 			<transition event="ready" target="talk">
