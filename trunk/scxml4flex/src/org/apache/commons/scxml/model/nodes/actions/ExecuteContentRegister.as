@@ -12,6 +12,7 @@ package org.apache.commons.scxml.model.nodes.actions
 		executeContentList.push(new CustomActionClassMap("script","org.apache.commons.scxml.model.nodes.actions.Script"));
 		executeContentList.push(new CustomActionClassMap("cancel","org.apache.commons.scxml.model.nodes.actions.Cancel"));
 		executeContentList.push(new CustomActionClassMap("send","org.apache.commons.scxml.model.nodes.actions.Send"));
+		executeContentList.push(new CustomActionClassMap("if","org.apache.commons.scxml.model.nodes.actions.If"));
 		
 		private var log:LogAction = null;
 		private var assign:Assign = null;
@@ -19,6 +20,7 @@ package org.apache.commons.scxml.model.nodes.actions
 		private var script:Script = null;
 		private var cancel:Cancel = null;
 		private var send:Send = null;
+		private var ife:If = null;
 		public function ExecuteContentRegister()
 		{
 			

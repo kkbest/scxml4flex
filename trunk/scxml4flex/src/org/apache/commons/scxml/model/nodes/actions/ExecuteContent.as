@@ -1,6 +1,7 @@
 package org.apache.commons.scxml.model.nodes.actions
 {
 	import org.apache.commons.scxml.model.SCXMLDocument;
+	import org.apache.commons.scxml.model.Compiler;
 	import org.apache.commons.scxml.interfaces.IInterpreter;
 	
 	public interface ExecuteContent

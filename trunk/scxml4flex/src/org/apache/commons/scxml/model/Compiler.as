@@ -26,7 +26,7 @@ package org.apache.commons.scxml.model {
 		private var doc : SCXMLDocument;
 		private var counter : int = 0;
 		private var interpreter : IInterpreter;
-		private var customActionList:Array;
+		public static var customActionList:Array;
 		
 		private static const logger:ILogger = Log.getLogger("Compiler");
 		
