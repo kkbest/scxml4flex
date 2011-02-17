@@ -1,8 +1,8 @@
-package
+package org.apache.commons.scxml.test.customaction
 {
-	import org.apache.commons.scxml.model.nodes.actions.ExecuteContent;
-	import org.apache.commons.scxml.model.SCXMLDocument;
 	import org.apache.commons.scxml.interfaces.IInterpreter;
+	import org.apache.commons.scxml.model.SCXMLDocument;
+	import org.apache.commons.scxml.model.nodes.actions.ExecuteContent;
 	
 	public class Hello implements ExecuteContent
 	{
