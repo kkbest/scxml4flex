@@ -11,8 +11,9 @@
 			import org.apache.commons.scxml.model.SCXML;
 			import org.apache.commons.scxml.model.events.SCXMLEvent;
 			import org.apache.commons.scxml.model.nodes.actions.CustomAction;
+			import org.apache.commons.scxml.test.customaction.Hello;
 			
-			[Embed(source="../resources/custom-hello-world.xml")]
+			[Embed(source="../resources/assign.xml")]
 			protected const scxmlDoc : Class;
 			private var engine:SCXML=null;
 			
