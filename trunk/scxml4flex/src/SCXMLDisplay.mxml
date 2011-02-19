@@ -13,16 +13,18 @@
 			import org.apache.commons.scxml.model.nodes.actions.CustomAction;
 			import org.apache.commons.scxml.test.customaction.Hello;
 			
-			[Embed(source="../resources/history.xml")]
-			protected const scxmlDoc : Class;
 			private var engine:SCXML=null;
 			
-			public function initPage():void {
+			private var docUrl:String="../resources/assign.xml";
+			private var st:URLRequest=new URLRequest(docUrl);
+			private var loader:URLLoader=new URLLoader();
+			
+			private function completeHandler(e:Event):void {
 				var customActionList:Array = new Array();
 				customActionList.push(new CustomAction("http://my.custom-actions.domain/CUSTOM","hello",new Hello()));
 				
 				engine= new SCXML();
-				var xml:XML=XML(scxmlDoc.data);
+				var xml:XML=XML(loader.data);
 				document_show.text=xml;
 				engine.addCustomAction(customActionList);
 				engine.source=xml;
@@ -30,6 +32,18 @@
 				engine.addEventListener(SCXMLEvent.STATE_ENTERED,listener);
 				engine.addEventListener(SCXMLEvent.FINAL_STATE_REACHED,finished);
 				engine.start();
+			}
+			
+			public function initPage():void {
+				loader.load(st);
+				loader.addEventListener(Event.COMPLETE, completeHandler);
+				
+				
+			}
+			private function loadXML(e:Event):void{
+				docUrl="../resources/"+xmlList.value.toString()+".xml";
+				st=new URLRequest(docUrl);
+				loader.load(st);
 			}
 			
 			public function finished(event:SCXMLEvent):void{
@@ -55,10 +69,24 @@
 	
 	
 	<s:TextArea id="document_show" name="document_show" text="test" width="349" height="506" x="21" y="26"/>
-	<s:TextInput id="event_source" x="400" y="48"/>
-	<s:Button x="579" y="48" label="Event Add" width="75" height="22" click="eventadd_clickHandler(event)"/>
-	<s:Label x="395" y="116" text="Current State:&#xd;" width="147" height="15"/>
-	<s:TextArea id="console" x="400" y="148" width="287" height="104"/>
+	<s:TextInput id="event_source" x="400" y="213"/>
+	<s:Button x="579" y="213" label="Event Add" width="75" height="22" click="eventadd_clickHandler(event)"/>
+	<s:Label x="395" y="281" text="Current State:&#xd;" width="147" height="15"/>
+	<s:TextArea id="console" x="400" y="313" width="287" height="104"/>
+	<mx:List x="400" y="26" width="254" height="133" id="xmlList" dataProvider="{mystates.state}">
+	</mx:List>
+	<mx:Button x="400" y="167" label="Load XML" width="254" height="26" click="loadXML(event)"/>
+	
+	<mx:Model id="mystates">
+		<states>
+			<state label="assign" data="assign.xml"/>
+			<state label="custom action" data="custom-hello-world"/>
+			<state label="history" data="history"/>
+			<state label="invoke" data="invoke_test"/>
+			<state label="bargein" data="bargein"/>
+			<state label="door" data="door"/>
+		</states>
+	</mx:Model>
 	
 	
 	
