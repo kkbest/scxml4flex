@@ -79,7 +79,7 @@
 	
 	<mx:Model id="mystates">
 		<states>
-			<state label="assign" data="assign.xml"/>
+			<state label="assign" data="assign"/>
 			<state label="custom action" data="custom-hello-world"/>
 			<state label="history" data="history"/>
 			<state label="invoke" data="invoke_test"/>
