@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:adobe="http://www.adobe.com/2009/flexUnitUIRunner"
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	minWidth="955" minHeight="600"
+	creationComplete="initPage()" layout="absolute"
+	 width="291" height="198">
+	<mx:Script>
+		<![CDATA[
+			import org.apache.commons.scxml.model.SCXML;
+			import org.apache.commons.scxml.model.events.SCXMLEvent;
+			import org.apache.commons.scxml.model.nodes.actions.CustomAction;
+			import org.apache.commons.scxml.test.customaction.Hello;
+			
+			private var engine:SCXML=null;
+			
+			private var docUrl:String="../resources/stopwatch.xml";
+			private var st:URLRequest=new URLRequest(docUrl);
+			private var loader:URLLoader=new URLLoader();
+			
+			/** The fragments of the elapsed time. */
+			private var hr:int, min:int, sec:int, fra:int;
+			private var timer:Timer = null;
+			
+			private function completeHandler(e:Event):void {
+				engine= new SCXML();
+				var xml:XML=XML(loader.data);
+				engine.source=xml;
+				
+				engine.addEventListener(SCXMLEvent.STATE_ENTERED,listener);
+				engine.addEventListener(SCXMLEvent.FINAL_STATE_REACHED,finished);
+				engine.start();
+			}
+			
+			public function initPage():void {
+				loader.load(st);
+				loader.addEventListener(Event.COMPLETE, completeHandler);
+				
+				timer = new Timer(100);
+				timer.addEventListener(TimerEvent.TIMER, increment);
+				
+				var sTimer:Timer = new Timer(25);
+				sTimer.addEventListener(TimerEvent.TIMER,show);
+				sTimer.start();
+			}
+			
+			private function show(e:Event){
+				hour.text=hr.toString();
+				minute.text=min.toString();
+				second.text=sec.toString();
+				fract.text=fra.toString();
+			}
+			
+			public function finished(event:SCXMLEvent):void{
+				trace("Event:"+event.toString());
+			}
+			
+			public function listener(event:SCXMLEvent):void{
+				show_status.text="Status:"+event.stateId.toString();
+				var state:String=event.stateId.toString();
+				if(state=="reset"){
+					hr = min = sec = fra  = 0;
+				}else if(state=="pause"){
+					timer.stop();
+				}else if(state=="running"){
+					timer.start();
+				}else{
+					timer.stop();
+				}
+			}
+			
+			private function increment(e:Event):void {
+				if (fra < 9) {
+					fra++;
+				} else {
+					fra = 0;
+					if (sec < 59) {
+						sec++;
+					} else {
+						sec = 0;
+						if (min < 59) {
+							min++;
+						} else {
+							min = 0;
+							if (hr < 99) {
+								hr++;
+							} else {
+								hr = 0; //wrap
+							}
+						}
+					}
+				}
+			}
+			
+			protected function click(eve:MouseEvent):void
+			{
+				var command:String = eve.target.label;
+				if(command=="Start"){
+					engine.send("watch.start");
+					start.label="Stop";
+					split.enabled=true;
+				}else if(command=="Stop"){
+					engine.send("watch.stop");
+					start.label="Reset";
+					split.enabled=false;
+				}else if(command=="Reset"){
+					engine.send("watch.reset");
+					start.label="Start";
+					split.label="Split";
+				}else if(command=="Split"){
+					engine.send("watch.split");
+					split.label="Unsplit";
+				}else{
+					engine.send("watch.unsplit");
+					split.label="Split";
+				}
+				
+			}
+
+		]]>
+	</mx:Script>
+	<mx:Button x="38" y="141" label="Start" id="start" click="click(event)"/>
+	<mx:Button x="185" y="141" label="Split" id="split" enabled="false" click="click(event)"/>
+	<mx:Text x="45" y="49" text="00" id="hour" fontSize="19"/>
+	<mx:Label x="87" y="52" text=":" width="12"/>
+	<mx:Text x="107" y="49" text="00" id="minute" fontSize="19"/>
+	<mx:Label x="142" y="52" text=":" width="8"/>
+	<mx:Text x="158" y="49" text="00" id="second" fontSize="19"/>
+	<mx:Label x="194" y="51" text=":" width="15"/>
+	<mx:Text x="216" y="49" text="0" id="fract" fontSize="19"/>
+	<mx:Text x="94" y="97" text="" id="show_status" width="120" fontSize="15"/>
+	
+	
+
+	
+	
+	
+</mx:Application>
