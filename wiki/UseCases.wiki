@@ -1,5 +1,5 @@
 #labels Featured
-#Add some use cases for SCXML4Flex
+Add some use cases for SCXML4Flex
 
 <wiki:toc max_depth="2" />
 
