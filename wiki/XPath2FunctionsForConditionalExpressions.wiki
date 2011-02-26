@@ -1,6 +1,21 @@
 #summary XPath 2.0 functions support detail for Conditional Expressions
 #labels Phase-Design
 
+This article tell us SCXML4Flex's XPath 2.0 support condition in Conditional Expressions, such as:
+
+in assign element
+{{{
+<assign location="$time" expr="fn:current-dateTime()"/>
+}}}
+in transition element
+{{{
+<transition cond="fn:year-from-dateTime($time) > 2009" target="newBehavior"/>
+}}}
+or in if,elseif element.
+
+
+<wiki:toc max_depth="2" />
+
 = Support Elements =
 
 ==XPath 2.0 Functions==
