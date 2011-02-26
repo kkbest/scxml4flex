@@ -1,0 +1,64 @@
+#summary Flex/ActionScript SCXML enigne project proposal
+#labels Phase-Design
+
+= Flex/ActionScript SCXML enigne project proposal =
+
+We usually use Flex ActionScript to develop some cartoon application, such as some thing move in the screen. Recently, i noticed that SCXML is a good solution for this kind of application, it can control state and transation very well. But sadly i can not get any good ActionScript based SCXML engine, so i want to develop a similar actionscript based SCXML engine.
+
+We have started develop job, and named it SCXML4Flex. It has implemented many SCXML elements:
+scxml, state, transition, final, history, parallel, onentry, onexit, data, invoke, log, assign, raise, script, cancel, param, send,if, elseif, else and finish [http://code.google.com/p/scxml4flex/wiki/HowToUseCustomAction CustomAction support]. Now, it can handler basic SCXML service, we can check SCXML4Flex demo [http://scxml4as.appspot.com/ here].
+
+But there is still a long way for SCXML4Flex to be perfect. We have still four parts to work for it, Basic element implementation, XInclude support, XPath support and Event IO processor.
+
+
+= Future Plan =
+
+==Basic elements implementation==
+Add validate,donedate,content,param,finalize support for SCXML4Flex.
+
+==XInclude support==
+We usually use XInclude to merge several XML document into one whole document. XInclude includes several attribute, XPointer is the most difficult part for us. I think we can choose a open source XPath engine and finish XPointer and XInclude implementation base on it.
+
+==XPath support==
+XPath is a very important component in any XML document and also in SCMXL document.
+===The XPath Data Model in SCXML===
+In SCXML's [http://www.w3.org/TR/scxml/#xpath-profile XPath data model], XPath 2.0 expressions are used to select a node-set from the data model by providing a binding expression. The following example illustrates this usage:
+{{{
+<state id="errorSwitch">
+  <datamodel>
+    <data id="cities">
+      <list xmlns="">
+        <city id="nyc" count="0">New York</city>
+        <city id="bos" count="0">Boston</city>
+      </list>
+    </data>
+  </datamodel>
+  <onentry>
+    <assign location="$cities/list/city[@id='nyc']/@count" expr="1"/>
+  </onentry>
+</state>
+}}}
+===Conditional Expressions in SCXML===
+XPath 2.0 expressions used in conditional expressions are converted into their effective boolean value as described XPath 2.0 specification. The following example illustrates this usage.
+{{{
+<state id="errorSwitch" xmlns:fn="http://www.w3.org/2005/xpath-functions">
+  <datamodel>
+    <data id="time"/>
+  </datamodel>
+          
+  <onentry>
+    <assign location="$time" expr="fn:current-dateTime()"/>
+  </onentry>
+          
+  <transition cond="fn:year-from-dateTime($time) > 2009" target="newBehavior"/>
+  <transition target="currentBehavior"/>
+</state>
+}}}
+In this section, we should finish all the XPath 2.0 functions implementation job.
+===XPath in XInclude===
+As we mentioned above, XInclude use XPath to build XPointer element.
+
+==Event IO processor==
+
+SCXML's Event I/O Processors includes several components:
+SCXML Event I/O Processor, Basic HTTP Event I/O Processor and DOM Event I/O Processor. We can see [http://www.w3.org/TR/scxml/#eventioprocessors here] to get more details
