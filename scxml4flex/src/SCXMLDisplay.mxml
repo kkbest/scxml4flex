@@ -12,6 +12,7 @@
 			import org.apache.commons.scxml.model.events.SCXMLEvent;
 			import org.apache.commons.scxml.model.nodes.actions.CustomAction;
 			import org.apache.commons.scxml.test.customaction.Hello;
+			import r1.deval.D;
 			
 			private var engine:SCXML=null;
 			
@@ -37,8 +38,6 @@
 			public function initPage():void {
 				loader.load(st);
 				loader.addEventListener(Event.COMPLETE, completeHandler);
-				
-				
 			}
 			private function loadXML(e:Event):void{
 				docUrl="../resources/"+xmlList.value.toString()+".xml";
