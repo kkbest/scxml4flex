@@ -1,16 +1,18 @@
 package org.apache.commons.scxml.model {
 	import org.apache.commons.scxml.abstract.GenericState;
-	
 	import org.apache.commons.scxml.model.nodes.*;
+	import org.apache.commons.scxml.xpath.StandardFunctions;
 	
 	public class SCXMLDocument {
 		public var states : Object;
-		public var dataModel : Object;
+		public var dataModel : Object = new Object();
 		private var rootState : MainState;
+		internal static var defaultFunctions:Object = new StandardFunctions();
 		
 		public function SCXMLDocument()	{
 			states = {};
-			dataModel = {"set" : function(key : String, val : *) : void {this.dataModel[key] = val;}};
+			dataModel["set"]=function(key : String, val : *) : void {this.dataModel[key] = val;};
+			dataModel["starts_with"]=defaultFunctions["starts_with"] as Function;
 		}
 		public function pushState(s : GenericState) : GenericState {
 			states[s.id] = s;
