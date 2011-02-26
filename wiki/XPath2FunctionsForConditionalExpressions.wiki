@@ -3,4 +3,10 @@
 
 = Support Elements =
 
-None yet, coming soon
+==XPath 2.0 Functions==
+
+# starts-with (but we should use starts_with replace starts-with in SCXML4Flex, it is a small bug)
+
+==Other==
+
+coming soon...
