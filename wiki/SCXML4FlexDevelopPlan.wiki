@@ -5,8 +5,8 @@
 
 We usually use Flex ActionScript to develop some cartoon application, such as some thing move in the screen. Recently, i noticed that SCXML is a good solution for this kind of application, it can control state and transation very well. But sadly i can not get any good ActionScript based SCXML engine, so i want to develop a similar actionscript based SCXML engine.
 
-We have started develop job, and named it SCXML4Flex. It has implemented many SCXML elements:
-scxml, state, transition, final, history, parallel, onentry, onexit, data, invoke, log, assign, raise, script, cancel, param, send,if, elseif, else and finish [http://code.google.com/p/scxml4flex/wiki/HowToUseCustomAction CustomAction support]. Now, it can handler basic SCXML service, we can check SCXML4Flex demo [http://scxml4as.appspot.com/ here].
+We have started develop job, and named it [http://code.google.com/p/scxml4flex/ SCXML4Flex]. It has implemented many SCXML elements:
+scxml, state, transition, final, history, parallel, onentry, onexit, data, invoke, log, assign, raise, script, cancel, param, send,if, elseif, else and finish [http://code.google.com/p/scxml4flex/wiki/HowToUseCustomAction CustomAction support]. Now, it is a usable ActionScript SCXML engine, it can handler basic SCXML service, we can check SCXML4Flex demo [http://scxml4as.appspot.com/ here].
 
 But there is still a long way for SCXML4Flex to be perfect. We have still four parts to work for it, Basic element implementation, XInclude support, XPath support and Event IO processor.
 
