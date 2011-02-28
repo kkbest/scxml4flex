@@ -14,10 +14,38 @@ But there is still a long way for SCXML4Flex to be perfect. We have still four p
 = Future Plan =
 
 ==Basic elements implementation==
-Add validate,donedate,content,param,finalize support for SCXML4Flex.
+SCXML4Flex has implemented many elements for SCXML already, but we should go head in this way, there are still some elements that were not implemented yet.
+*validate element
+*donedate element
+*content element 
+*param element
+*finalize element
+
+==System variables implementation==
+The Data Module maintains a protected portion of the data model containing information that may be useful to applications. We refer to the items in this special part of the data model as 'system variables'. Implementations must provide the following system variables.
+*_event
+*_sessionid
+*_name
+*_x
+The set of system variables may be expanded in future versions of this specification. Variable names beginning with '_' are reserved for system use. Developers must not use ids beginning with '_' in the &lt;data&gt; element. We can check [http://www.w3.org/TR/scxml/#SystemVariables here] to get more information about system variables.
 
 ==XInclude support==
-We usually use XInclude to merge several XML document into one whole document. XInclude includes several attribute, XPointer is the most difficult part for us. I think we can choose a open source XPath engine and finish XPointer and XInclude implementation base on it.
+We usually use XInclude to merge several XML document into one whole document. 
+{{{
+<?xml version="1.0" encoding="utf-8" ?>
+<data xmlns:xi="http://www.w3.org/2001/XInclude">
+		<item><xi:include href="books.xml" xpointer="/bookstore/book[1]/title"/></item>
+		<item><xinclude href="books.xml" xpointer="/bookstore/book/price/text()"/></item>
+		<item><xinclude href="books.xml" xpointer="/bookstore/book[price>35]/price"/></item>
+		<item><xi:include href="books.xml" xpointer="/bookstore/book[price>35]/title"/></item>
+	</bookTests>
+	<item>data 1</item>
+	<item>data 2</item>
+	<xinclude href="Test2Doc.xml" xpointer="/path/to/evaluate"/>
+	<xi:include href="Test2Doc.xml" xpointer="//*"/>
+</data>
+}}}
+XInclude includes several attribute, XPointer is the most difficult part for us. I think we can choose a open source XPath engine and finish XPointer and XInclude implementation base on it.
 
 ==XPath support==
 XPath is a very important component in any XML document and also in SCMXL document.
