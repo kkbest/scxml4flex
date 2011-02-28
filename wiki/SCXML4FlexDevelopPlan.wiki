@@ -13,7 +13,7 @@ But there is still a long way for SCXML4Flex to be perfect. We have still four p
 
 = Future Plan =
 
-==Basic elements implementation==
+==1. Basic elements implementation==
 SCXML4Flex has implemented many elements for SCXML already, but we should go head in this way, there are still some elements that were not implemented yet:
  * validate element
  * donedate element
@@ -21,7 +21,7 @@ SCXML4Flex has implemented many elements for SCXML already, but we should go hea
  * param element
  * finalize element
 
-==System variables implementation==
+==2. System variables implementation==
 The Data Module maintains a protected portion of the data model containing information that may be useful to applications. We refer to the items in this special part of the data model as 'system variables'. Implementations must provide the following system variables:
  * {{{_event}}}
  * {{{_sessionid}}}
@@ -29,7 +29,7 @@ The Data Module maintains a protected portion of the data model containing infor
  * {{{_x}}}
 The set of system variables may be expanded in future versions of this specification. Variable names beginning with  {{{_}}}  are reserved for system use. Developers must not use ids beginning with  {{{_}}} in the < data > element. We can check [http://www.w3.org/TR/scxml/#SystemVariables here] to get more information about system variables.
 
-==XInclude support==
+==3. XInclude support==
 We usually use XInclude to merge several XML document into one whole document. 
 {{{
 <?xml version="1.0" encoding="utf-8" ?>
@@ -47,7 +47,7 @@ We usually use XInclude to merge several XML document into one whole document.
 }}}
 XInclude includes several attribute, XPointer is the most difficult part for us. I think we can choose a open source XPath engine and finish XPointer and XInclude implementation base on it.
 
-==XPath support==
+==4. XPath support==
 XPath is a very important component in any XML document and also in SCMXL document.
 ===The XPath Data Model in SCXML===
 In SCXML's [http://www.w3.org/TR/scxml/#xpath-profile XPath data model], XPath 2.0 expressions are used to select a node-set from the data model by providing a binding expression. The following example illustrates this usage:
@@ -86,7 +86,7 @@ In this section, we should finish all the XPath 2.0 functions implementation job
 ===XPath in XInclude===
 As we mentioned above, XInclude use XPath to build XPointer element.
 
-==Event IO processor==
+==5. Event IO processor==
 
 SCXML's Event I/O Processors includes several components:
 SCXML Event I/O Processor, Basic HTTP Event I/O Processor and DOM Event I/O Processor. We can see [http://www.w3.org/TR/scxml/#eventioprocessors here] to get more details
