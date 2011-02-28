@@ -27,7 +27,7 @@ The Data Module maintains a protected portion of the data model containing infor
  * _sessionid
  * _name
  * _x
-The set of system variables may be expanded in future versions of this specification. Variable names beginning with  '_'  are reserved for system use. Developers must not use ids beginning with  '_' in the < data > element. We can check [http://www.w3.org/TR/scxml/#SystemVariables here] to get more information about system variables.
+The set of system variables may be expanded in future versions of this specification. Variable names beginning with  {{{_}}}  are reserved for system use. Developers must not use ids beginning with  '_' in the < data > element. We can check [http://www.w3.org/TR/scxml/#SystemVariables here] to get more information about system variables.
 
 ==XInclude support==
 We usually use XInclude to merge several XML document into one whole document. 
