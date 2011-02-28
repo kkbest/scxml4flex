@@ -82,7 +82,7 @@ XPath 2.0 expressions used in conditional expressions are converted into their e
   <transition target="currentBehavior"/>
 </state>
 }}}
-In this section, we should finish all the XPath 2.0 functions implementation job.
+In this section, we should finish all the XPath 2.0 functions implementation job and I have started this part of job, working for functions implementation, you can check [http://code.google.com/p/scxml4flex/wiki/XPath2FunctionsForConditionalExpressions here] to get XPath 2.0 functions implementation progress.
 ===XPath in XInclude===
 As we mentioned above, XInclude use XPath to build XPointer element.
 
