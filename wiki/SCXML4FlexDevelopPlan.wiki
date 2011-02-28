@@ -14,7 +14,7 @@ But there is still a long way for SCXML4Flex to be perfect. We have still four p
 = Future Plan =
 
 ==Basic elements implementation==
-SCXML4Flex has implemented many elements for SCXML already, but we should go head in this way, there are still some elements that were not implemented yet.
+SCXML4Flex has implemented many elements for SCXML already, but we should go head in this way, there are still some elements that were not implemented yet:
 * validate element
 * donedate element
 * content element 
@@ -22,11 +22,11 @@ SCXML4Flex has implemented many elements for SCXML already, but we should go hea
 * finalize element
 
 ==System variables implementation==
-The Data Module maintains a protected portion of the data model containing information that may be useful to applications. We refer to the items in this special part of the data model as 'system variables'. Implementations must provide the following system variables.
-*_event
-*_sessionid
-*_name
-*_x
+The Data Module maintains a protected portion of the data model containing information that may be useful to applications. We refer to the items in this special part of the data model as 'system variables'. Implementations must provide the following system variables:
+* _event
+* _sessionid
+* _name
+* _x
 The set of system variables may be expanded in future versions of this specification. Variable names beginning with '_' are reserved for system use. Developers must not use ids beginning with '_' in the < data > element. We can check [http://www.w3.org/TR/scxml/#SystemVariables here] to get more information about system variables.
 
 ==XInclude support==
