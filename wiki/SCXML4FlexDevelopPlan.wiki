@@ -15,11 +15,11 @@ But there is still a long way for SCXML4Flex to be perfect. We have still four p
 
 ==Basic elements implementation==
 SCXML4Flex has implemented many elements for SCXML already, but we should go head in this way, there are still some elements that were not implemented yet:
-* validate element
-* donedate element
-* content element 
-* param element
-* finalize element
+ * validate element
+ * donedate element
+ * content element 
+ * param element
+ * finalize element
 
 ==System variables implementation==
 The Data Module maintains a protected portion of the data model containing information that may be useful to applications. We refer to the items in this special part of the data model as 'system variables'. Implementations must provide the following system variables:
