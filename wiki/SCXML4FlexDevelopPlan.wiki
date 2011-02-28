@@ -3,7 +3,7 @@
 
 = Flex/ActionScript SCXML enigne project proposal =
 
-We usually use Flex ActionScript to develop some cartoon application, such as some thing move in the screen. Recently, i noticed that SCXML is a good solution for this kind of application, it can control state and transation very well. But sadly i can not get any good ActionScript based SCXML engine, so i want to develop a similar actionscript based SCXML engine.
+We usually use Flex ActionScript to develop some cartoon application, such as some thing move in the screen. Recently, i noticed that [http://www.w3c.org/TR/scxml State Chart XML] is a good solution for this kind of application, it can control state and transation very well. But sadly i can not get any good ActionScript based SCXML engine, so i want to develop a similar actionscript based SCXML engine.
 
 We have started develop job, and named it [http://code.google.com/p/scxml4flex/ SCXML4Flex]. It has implemented many SCXML elements:
 scxml, state, transition, final, history, parallel, onentry, onexit, data, invoke, log, assign, raise, script, cancel, param, send,if, elseif, else and finish [http://code.google.com/p/scxml4flex/wiki/HowToUseCustomAction CustomAction support]. Now, it is a usable ActionScript SCXML engine, it can handler basic SCXML service, we can check SCXML4Flex demo [http://scxml4as.appspot.com/ here].
@@ -23,11 +23,11 @@ SCXML4Flex has implemented many elements for SCXML already, but we should go hea
 
 ==System variables implementation==
 The Data Module maintains a protected portion of the data model containing information that may be useful to applications. We refer to the items in this special part of the data model as 'system variables'. Implementations must provide the following system variables:
- * _event
- * _sessionid
- * _name
- * _x
-The set of system variables may be expanded in future versions of this specification. Variable names beginning with  {{{_}}}  are reserved for system use. Developers must not use ids beginning with  '_' in the < data > element. We can check [http://www.w3.org/TR/scxml/#SystemVariables here] to get more information about system variables.
+ * {{{_event}}}
+ * {{{_sessionid}}}
+ * {{{_name}}}
+ * {{{_x}}}
+The set of system variables may be expanded in future versions of this specification. Variable names beginning with  {{{_}}}  are reserved for system use. Developers must not use ids beginning with  {{{_}}} in the < data > element. We can check [http://www.w3.org/TR/scxml/#SystemVariables here] to get more information about system variables.
 
 ==XInclude support==
 We usually use XInclude to merge several XML document into one whole document. 
