@@ -49,7 +49,7 @@ XInclude includes several attribute, XPointer is the most difficult part for us.
 
 ==4. XPath support==
 XPath is a very important component in any XML document and also in SCMXL document.
-===The XPath Data Model in SCXML===
+===4.1 The XPath Data Model in SCXML===
 In SCXML's [http://www.w3.org/TR/scxml/#xpath-profile XPath data model], XPath 2.0 expressions are used to select a node-set from the data model by providing a binding expression. The following example illustrates this usage:
 {{{
 <state id="errorSwitch">
@@ -66,7 +66,7 @@ In SCXML's [http://www.w3.org/TR/scxml/#xpath-profile XPath data model], XPath 2
   </onentry>
 </state>
 }}}
-===Conditional Expressions in SCXML===
+===4.2 Conditional Expressions in SCXML===
 XPath 2.0 expressions used in conditional expressions are converted into their effective boolean value as described XPath 2.0 specification. The following example illustrates this usage.
 {{{
 <state id="errorSwitch" xmlns:fn="http://www.w3.org/2005/xpath-functions">
@@ -83,7 +83,7 @@ XPath 2.0 expressions used in conditional expressions are converted into their e
 </state>
 }}}
 In this section, we should finish all the XPath 2.0 functions implementation job and I have started this part of job, working for functions implementation, you can check [http://code.google.com/p/scxml4flex/wiki/XPath2FunctionsForConditionalExpressions here] to get XPath 2.0 functions implementation progress.
-===XPath in XInclude===
+===4.3 XPath in XInclude===
 As we mentioned above, XInclude use XPath to build XPointer element.
 
 ==5. Event IO processor==
