@@ -13,6 +13,7 @@ package org.apache.commons.scxml.model {
 			states = {};
 			dataModel["set"]=function(key : String, val : *) : void {this.dataModel[key] = val;};
 			dataModel["starts_with"]=defaultFunctions["starts_with"] as Function;
+			dataModel["ends_with"]=defaultFunctions["ends_with"] as Function;
 		}
 		public function pushState(s : GenericState) : GenericState {
 			states[s.id] = s;
