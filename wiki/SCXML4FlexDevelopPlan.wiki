@@ -20,6 +20,7 @@ SCXML4Flex has implemented many elements for SCXML already, but we should go hea
  * content element 
  * param element
  * finalize element
+Note: Implementation of donedate,content,param,finalize are some kind of depend on the implementation of Event IO processor.
 
 ==2. System variables implementation==
 The Data Module maintains a protected portion of the data model containing information that may be useful to applications. We refer to the items in this special part of the data model as 'system variables'. Implementations must provide the following system variables:
