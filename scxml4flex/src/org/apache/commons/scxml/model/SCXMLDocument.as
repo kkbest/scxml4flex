@@ -12,8 +12,9 @@ package org.apache.commons.scxml.model {
 		public function SCXMLDocument()	{
 			states = {};
 			dataModel["set"]=function(key : String, val : *) : void {this.dataModel[key] = val;};
-			dataModel["starts_with"]=defaultFunctions["starts_with"] as Function;
-			dataModel["ends_with"]=defaultFunctions["ends_with"] as Function;
+			dataModel["contains"]=defaultFunctions["contains"] as Function;
+			dataModel["starts_with"]=defaultFunctions["starts-with"] as Function;
+			dataModel["ends_with"]=defaultFunctions["ends-with"] as Function;
 		}
 		public function pushState(s : GenericState) : GenericState {
 			states[s.id] = s;
