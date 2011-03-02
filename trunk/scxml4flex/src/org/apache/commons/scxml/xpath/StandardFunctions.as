@@ -7,6 +7,7 @@ package org.apache.commons.scxml.xpath
 			this["contains"]=strContains;
 			this["starts-with"] = startsWith;
 			this["ends-with"] = endsWith;
+			this["substring_before"]=substringBefore;
 		}
 		
 		
@@ -28,6 +29,12 @@ package org.apache.commons.scxml.xpath
 				if(a.substr(a.length-b.length,b.length)==b) return true;
 				else return false;
 			}
+		}
+		public function substringBefore(a:String,b:String):String{
+			var p:int=a.indexOf(b);
+			if(p>-1){
+				return a.substring(0,p);
+			}else return "";
 		}
 	}
 }
