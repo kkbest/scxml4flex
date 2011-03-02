@@ -4,8 +4,9 @@ package org.apache.commons.scxml.xpath
 	{
 		public function StandardFunctions()
 		{
-			this["starts_with"] = startsWith;
-			this["ends_with"] = endsWith;
+			this["contains"]=strContains;
+			this["starts-with"] = startsWith;
+			this["ends-with"] = endsWith;
 		}
 		
 		
@@ -13,6 +14,9 @@ package org.apache.commons.scxml.xpath
 		 /******************************************************** 
 		  *                   String Functions                   *
 		  ********************************************************/ 
+		public function strContains(a:String,b:String):Boolean{
+			return a.indexOf(b)>-1;
+		}
 		public function startsWith(one:String,two:String):Boolean{
 			if(one.substr(0,two.length)==two)
 				return true;
