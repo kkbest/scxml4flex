@@ -25,7 +25,7 @@ or in if,elseif element.
  * ends-with
  * substring-before
 
-Note: we should replace " - " with " '_' " in SCXML document, for example use starts_with replace starts-with in SCXML4Flex, it is a small bug
+Note: we should replace  -  with _ in SCXML document, for example use starts_with replace starts-with in SCXML4Flex, it is a small bug
 ==Other==
 
 coming soon...
