@@ -8,6 +8,7 @@ package org.apache.commons.scxml.xpath
 			this["starts-with"] = startsWith;
 			this["ends-with"] = endsWith;
 			this["substring_before"]=substringBefore;
+			this["substring_after"]=substringAfter;
 		}
 		
 		
@@ -34,6 +35,14 @@ package org.apache.commons.scxml.xpath
 			var p:int=a.indexOf(b);
 			if(p>-1){
 				return a.substring(0,p);
+			}else return "";
+		}
+		public function substringAfter(a:String,b:String):String{
+			var p:int=a.indexOf(b);
+			if(p>-1){
+				if(p+b.length<a.length){
+					return a.substring(p+b.length,a.length);
+				}else return "";
 			}else return "";
 		}
 	}
