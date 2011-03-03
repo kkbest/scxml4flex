@@ -16,6 +16,7 @@ package org.apache.commons.scxml.model {
 			dataModel["starts_with"]=defaultFunctions["starts-with"] as Function;
 			dataModel["ends_with"]=defaultFunctions["ends-with"] as Function;
 			dataModel["substring_before"]=defaultFunctions["substring_before"] as Function;
+			dataModel["substring_after"]=defaultFunctions["substring_after"] as Function;
 		}
 		public function pushState(s : GenericState) : GenericState {
 			states[s.id] = s;
