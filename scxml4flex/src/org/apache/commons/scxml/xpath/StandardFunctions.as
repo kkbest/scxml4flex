@@ -1,9 +1,13 @@
 package org.apache.commons.scxml.xpath
 {
+	import mx.utils.ObjectUtil;
+	
 	dynamic public class StandardFunctions
 	{
 		public function StandardFunctions()
 		{
+			this["compare"]=strCompare;
+			this["codepoint-equal"]=codepointEqual;
 			this["contains"]=strContains;
 			this["starts-with"] = startsWith;
 			this["ends-with"] = endsWith;
@@ -16,6 +20,13 @@ package org.apache.commons.scxml.xpath
 		 /******************************************************** 
 		  *                   String Functions                   *
 		  ********************************************************/ 
+		public function strCompare(a:String,b:String):int{
+			return ObjectUtil.stringCompare(a,b,false);
+		}
+		public function codepointEqual(a:String,b:String):Boolean{
+			if(a==null||b==null) return false;
+			else return a==b?true:false;
+		}
 		public function strContains(a:String,b:String):Boolean{
 			return a.indexOf(b)>-1;
 		}
