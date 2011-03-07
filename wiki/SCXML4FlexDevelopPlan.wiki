@@ -13,16 +13,16 @@ SCXML4Flex is still in its infancy, and it will have a long way to go in order t
 = Future Plan =
 
 ==1. Basic elements implementation==
-SCXML4Flex has implemented many elements for SCXML already, but we should go head in this way, there are still some elements that were not implemented yet:
+SCXML4Flex has already implemented many elements for SCXML already, but we should go head in this way, there are still some elements that were not implemented yet:
  * validate element
  * donedate element
  * content element 
  * param element
  * finalize element
-Note: Implementation of donedate,content,param,finalize are some kind of depend on the implementation of Event IO processor.
+Note: Implementation of donedate,content,param,finalize elements are some kind of depended on the implementation of Event IO processor.
 
 ==2. System variables implementation==
-The Data Module maintains a protected portion of the data model containing information that may be useful to applications. We refer to the items in this special part of the data model as 'system variables'. Implementations must provide the following system variables:
+The Data Module maintains a protected portion of the data model containing information that may be useful to applications. We refer the items in this special part of the data model as 'system variables'. Implementations must provide the following system variables:
  * {{{_event}}}
  * {{{_sessionid}}}
  * {{{_name}}}
@@ -48,7 +48,7 @@ We usually use XInclude to merge several XML document into one whole document.
 XInclude includes several attribute, XPointer is the most difficult part for us. I think we can choose a open source XPath engine and finish XPointer and XInclude implementation base on it.
 
 ==4. XPath support==
-XPath is a very important component in any XML document and also in SCMXL document.
+XPath plays a significant role in any XML document and also in SCMXL document.
 ===4.1 The XPath Data Model in SCXML===
 In SCXML's [http://www.w3.org/TR/scxml/#xpath-profile XPath data model], XPath 2.0 expressions are used to select a node-set from the data model by providing a binding expression. The following example illustrates this usage:
 {{{
@@ -67,7 +67,7 @@ In SCXML's [http://www.w3.org/TR/scxml/#xpath-profile XPath data model], XPath 2
 </state>
 }}}
 ===4.2 Conditional Expressions in SCXML===
-XPath 2.0 expressions used in conditional expressions are converted into their effective boolean value as described XPath 2.0 specification. The following example illustrates this usage.
+XPath 2.0 expressions used in conditional expressions, which are converted into their effective boolean value as described XPath 2.0 specification. The following example illustrates this usage.
 {{{
 <state id="errorSwitch" xmlns:fn="http://www.w3.org/2005/xpath-functions">
   <datamodel>
@@ -82,11 +82,10 @@ XPath 2.0 expressions used in conditional expressions are converted into their e
   <transition target="currentBehavior"/>
 </state>
 }}}
-In this section, we should finish all the XPath 2.0 functions implementation job and I have started this part of job, working for functions implementation, you can check [http://code.google.com/p/scxml4flex/wiki/XPath2FunctionsForConditionalExpressions here] to get XPath 2.0 functions implementation progress.
+In this section, we should finish all the XPath 2.0 functions implementation job and I have started this part of job, working for functions implementation, we can check [http://code.google.com/p/scxml4flex/wiki/XPath2FunctionsForConditionalExpressions here] to get XPath 2.0 functions implementation progress.
 ===4.3 XPath in XInclude===
 As we mentioned above, XInclude use XPath to build XPointer element.
 
 ==5. Event IO processor==
 
-SCXML's Event I/O Processors includes several components:
-SCXML Event I/O Processor, Basic HTTP Event I/O Processor and DOM Event I/O Processor. We can see [http://www.w3.org/TR/scxml/#eventioprocessors here] to get more details
+SCXML's Event I/O Processors is individed into three components, and they are SCXML Event I/O Processor, Basic HTTP Event I/O Processor and DOM Event I/O Processor. If you would like to get more details of them, please click [http://www.w3.org/TR/scxml/#eventioprocessors here] .
