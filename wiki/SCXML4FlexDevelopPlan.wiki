@@ -1,10 +1,11 @@
-#summary Flex/ActionScript SCXML enigne project proposal
+#summary Flex/ActionScript SCXML engine project proposal
 #labels Phase-Design
 
-= Flex/ActionScript SCXML enigne project proposal =
+= Flex/ActionScript SCXML engine project proposal =
 
+==The Problem==
 Flex/ActionScript has been widely used to develop some cartoon applications, which executes a character or something moving on the computer screen. Recently, I noticed that [http://www.w3c.org/TR/scxml State Chart XML] seems to be a good solution for this kind of application, because it can control state and transition very well. Unfortunately, I was not able to get any good ActionScript based SCXML engine. I advise that it would make sense to develop such a kind of actionscript based SCXML engine to help with executing a state machine defined using a SCXML document.
-
+==The Proposal==
 Our team began to make it happen, and named the project [http://code.google.com/p/scxml4flex/ SCXML4Flex]. It has launch to implement many SCXML elements, such as scxml, state, transition, final, history, parallel, onentry, onexit, data, invoke, log, assign, raise, script, cancel, param, send,if, elseif, else and finish [http://code.google.com/p/scxml4flex/wiki/HowToUseCustomAction CustomAction support]. Currently, it is a usable ActionScript SCXML engine, which can handler basic SCXML service. You could check SCXML4Flex [http://scxml4as.appspot.com/ demos here]. 
 SCXML4Flex were still in their infancy, and it will have a long way to go in order to be perfect. There are four parts to work on in the future as follow: Basic element implementation, XInclude support, XPath support and Event IO processor.
 
