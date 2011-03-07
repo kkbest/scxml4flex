@@ -3,13 +3,10 @@
 
 = Flex/ActionScript SCXML enigne project proposal =
 
-We usually use Flex ActionScript to develop some cartoon application, such as some thing move in the screen. Recently, i noticed that [http://www.w3c.org/TR/scxml State Chart XML] is a good solution for this kind of application, it can control state and transation very well. But sadly i can not get any good ActionScript based SCXML engine, so i want to develop a such kind of actionscript based SCXML engine.
+Flex/ActionScript has been widely used to develop some cartoon applications, which executes a character or something moving on the computer screen. Recently, I noticed that [http://www.w3c.org/TR/scxml State Chart XML] seems to be a good solution for this kind of application, because it can control state and transition very well. Unfortunately, I was not able to get any good ActionScript based SCXML engine. I advise that it would make sense to develop such a kind of actionscript based SCXML engine to help with executing a state machine defined using a SCXML document.
 
-We have started develop job, and named it [http://code.google.com/p/scxml4flex/ SCXML4Flex]. It has implemented many SCXML elements:
-scxml, state, transition, final, history, parallel, onentry, onexit, data, invoke, log, assign, raise, script, cancel, param, send,if, elseif, else and finish [http://code.google.com/p/scxml4flex/wiki/HowToUseCustomAction CustomAction support]. Now, it is a usable ActionScript SCXML engine, it can handler basic SCXML service, we can check SCXML4Flex demo [http://scxml4as.appspot.com/ here].
-
-But there is still a long way for SCXML4Flex to be perfect. We have still four parts to work for it, Basic element implementation, XInclude support, XPath support and Event IO processor.
-
+Our team began to make it happen, and named the project [http://code.google.com/p/scxml4flex/ SCXML4Flex]. It has launch to implement many SCXML elements, such as scxml, state, transition, final, history, parallel, onentry, onexit, data, invoke, log, assign, raise, script, cancel, param, send,if, elseif, else and finish [http://code.google.com/p/scxml4flex/wiki/HowToUseCustomAction CustomAction support]. Currently, it is a usable ActionScript SCXML engine, which can handler basic SCXML service. You could check SCXML4Flex [http://scxml4as.appspot.com/ demos here]. 
+SCXML4Flex were still in their infancy, and it will have a long way to go in order to be perfect. There are four parts to work on in the future as follow: Basic element implementation, XInclude support, XPath support and Event IO processor.
 
 = Future Plan =
 
