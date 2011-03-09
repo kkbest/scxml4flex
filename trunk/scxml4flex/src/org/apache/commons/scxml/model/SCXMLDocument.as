@@ -12,6 +12,7 @@ package org.apache.commons.scxml.model {
 		public function SCXMLDocument()	{
 			states = {};
 			dataModel["set"]=function(key : String, val : *) : void {this.dataModel[key] = val;};
+			dataModel["concat"]=defaultFunctions["concat"] as Function;
 			dataModel["compare"]=defaultFunctions["compare"] as Function;
 			dataModel["codepoint_equal"]=defaultFunctions["codepoint-equal"] as Function;
 			dataModel["contains"]=defaultFunctions["contains"] as Function;

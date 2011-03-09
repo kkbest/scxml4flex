@@ -6,6 +6,7 @@ package org.apache.commons.scxml.xpath
 	{
 		public function StandardFunctions()
 		{
+			this["concat"]=strConcat;
 			this["compare"]=strCompare;
 			this["codepoint-equal"]=codepointEqual;
 			this["contains"]=strContains;
@@ -20,6 +21,13 @@ package org.apache.commons.scxml.xpath
 		 /******************************************************** 
 		  *                   String Functions                   *
 		  ********************************************************/ 
+		public function strConcat(a:String,b:String,...vars):String{
+			var ret:String=a+b;
+			for(var i:int ; i < vars.length ; i++){
+				ret+=vars[i];
+			}
+			return ret;
+		}
 		public function strCompare(a:String,b:String):int{
 			return ObjectUtil.stringCompare(a,b,false);
 		}
