@@ -6,9 +6,10 @@ package org.apache.commons.scxml.xpath
 	{
 		public function StandardFunctions()
 		{
-			this["concat"]=strConcat;
 			this["compare"]=strCompare;
 			this["codepoint-equal"]=codepointEqual;
+			this["concat"]=strConcat;
+			this["string-join"]=stringJoin;
 			this["contains"]=strContains;
 			this["starts-with"] = startsWith;
 			this["ends-with"] = endsWith;
@@ -23,10 +24,17 @@ package org.apache.commons.scxml.xpath
 		  ********************************************************/ 
 		public function strConcat(a:String,b:String,...vars):String{
 			var ret:String=a+b;
-			for(var i:int ; i < vars.length ; i++){
+			for(var i:int = 0; i < vars.length ; i++){
 				ret+=vars[i];
 			}
 			return ret;
+		}
+		public function stringJoin(array:Array,b:String):String{
+			var ret:String="";
+			for(var i:int = 0 ; i < array.length - 1 ; i++){
+				ret+=array[i] + b;
+			}
+			return ret+array[array.length - 1];
 		}
 		public function strCompare(a:String,b:String):int{
 			return ObjectUtil.stringCompare(a,b,false);
