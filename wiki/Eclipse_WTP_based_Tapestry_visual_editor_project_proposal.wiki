@@ -21,13 +21,16 @@ This editor should have following mainly functions:
 
 ==Must have functions==
 1. Tapertry libraries import wizard
+
 Add necessary Tapestry 5 relative jars into web project.
 
 2. Tapestry page/component creation wizard
+
 It will supply a wizard helping us to create the .tml file and .java
 file together  for a Tapestry page/component.
 
 3. Add Tapestry component support for WTP web editor palette
+
 If we open a Tapestry page/component with WTP Web Page Editor, its
 palette will contains three main section, HTML,Tapestry core and
 Tapestry custom component. Then, we can drap-and-drop the components
@@ -46,6 +49,7 @@ Tapestry page's .tml file and .java file
 
 5. Add Tapestry built in and custom components autocomplete function
 for WTP Web Page Editor's source view
+
 If we add component insert code, such as "<span jwcid="@Insert"/>",So
 when you type
 
@@ -53,11 +57,13 @@ when you type
 completes it with the required parameters listed.
 
 6.Tapestry component's parameters property view
+
 We select a component in canvas design view or source view, the
 Eclipse property view will list this component's parameters and we can
 edit the parameters here.
 
 7.Autocomplete of properties from the .java page when editing the .tml file
+
 In the Source Page of the Web Page Editor, add the Tapestry tag, (for
 example ${prop:index}). With the cursor inside the brackets, hit
 Ctrl+spacebar, should see a pop-up with a list of all the available
@@ -65,11 +71,13 @@ properties defined in the corresponding java class.
 
 ==Optional features==
 8. Validation function in Tapestry .tml file source view
+
 Beyond the basic JSP validation already provided with the JSP editor,
 this editor supplies semantic validation of the Tapestry standard tag
 libraries for both EL and non-EL attribute values.
 
 9. Hyperlink function in Tapestry .tml file source view
+
 Hyperlink to the Java editor from Managed Bean variable, Managed Bean
 property and Managed Bean method referenced in the Expression
 Language(EL) of a tag-attribute.
