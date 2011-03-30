@@ -4,16 +4,20 @@
 = Introduction =
 
 Apache Tapestry supplies powerful component structure, and it offered a number of other
-powerful features that proved to be critical in our work.[http://www.eclipse.org/webtools/ The Eclipse Web Tools Platform (WTP) project] extends the Eclipse
+powerful features that proved to be critical in our work.
+
+[http://www.eclipse.org/webtools/ The Eclipse Web Tools Platform (WTP) project] extends the Eclipse
 platform with tools for developing Web and Java EE applications. It
 includes source and graphical editors for a variety of languages,
 wizards and built-in applications to simplify development, and tools
-and APIs to support deploying, running, and testing apps.
-WTP supplies Web Page Editor for us to edit HTML page, JSP page and
-JSF-JSP web page. Tapestry was used widely nowadays, but we can not find a proper Tapestry visual editor, Eclipse WTP is also popular in Web application development, but it is a shame that Eclipse WTP does not support Tapestry. Tapestry allowed a clean separation between Java and HTML, and made it possible for the design work on the application to continue well after the code had been completed.It is becoming more and more popular today, and i think it is necessary for Eclipse WTP to support Tapestry.
+and APIs to support deploying, running, and testing apps.WTP supplies Web Page Editor for us to edit HTML page, JSP page and
+JSF-JSP web page.
 
-So I want to build an Eclipse WTP based Tapestry visual editor, named
-it Tapestry Tools. It should have following mainly functions (GSoC supplies us only 3 months to finish our project, so this project will focus on Tapestry 5, after that, if we have enough time, will supply other Tapestry version support):
+Tapestry was used widely nowadays, it allowed a clean separation between Java and HTML, and made it possible for the design work on the application to continue well after the code had been completed, It is becoming more and more popular today. But we can not find a proper Tapestry visual editor, Eclipse WTP is popular in Web application development, but it is a shame that Eclipse WTP does not support Tapestry, so i think it is a good idea to build a Tapestry visual editor on Eclipse WTP.
+
+This editor should have following mainly functions:
+
+*Note* GSoC supplies us only 3 months to finish our project, so this project will focus on Tapestry 5, after that, if we have enough time, will supply other Tapestry version support
 
 ==Must have functions==
 1. Tapertry libraries import wizard
@@ -60,12 +64,12 @@ Ctrl+spacebar, should see a pop-up with a list of all the available
 properties defined in the corresponding java class.
 
 ==Optional features==
-8. [optional features]  Validation function in Tapestry .tml file source view
+8. Validation function in Tapestry .tml file source view
 Beyond the basic JSP validation already provided with the JSP editor,
 this editor supplies semantic validation of the Tapestry standard tag
 libraries for both EL and non-EL attribute values.
 
-9. [optional features]  Hyperlink function in Tapestry .tml file source view
+9. Hyperlink function in Tapestry .tml file source view
 Hyperlink to the Java editor from Managed Bean variable, Managed Bean
 property and Managed Bean method referenced in the Expression
 Language(EL) of a tag-attribute.
