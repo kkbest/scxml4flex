@@ -51,10 +51,7 @@ Tapestry page's .tml file and .java file
 for WTP Web Page Editor's source view
 
 If we add component insert code, such as "<span jwcid="@Insert"/>",So
-when you type
-
-<span jwcid="@ it comes up with a list you can choose from and then
-completes it with the required parameters listed.
+when you type {{{<span jwcid="@}}} it comes up with a list you can choose from and then completes it with the required parameters listed.
 
 6.Tapestry component's parameters property view
 
