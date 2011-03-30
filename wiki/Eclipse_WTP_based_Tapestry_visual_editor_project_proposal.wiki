@@ -50,8 +50,12 @@ Tapestry page's .tml file and .java file
 5. Add Tapestry built in and custom components autocomplete function
 for WTP Web Page Editor's source view
 
-If we add component insert code, such as "<span jwcid="@Insert"/>",So
-when you type {{{<span jwcid="@}}} it comes up with a list you can choose from and then completes it with the required parameters listed.
+If we add component insert code, such as {{{
+<span jwcid="@Insert"/>
+}}},So
+when you type {{{
+<span jwcid="@
+}}} it comes up with a list you can choose from and then completes it with the required parameters listed.
 
 6.Tapestry component's parameters property view
 
