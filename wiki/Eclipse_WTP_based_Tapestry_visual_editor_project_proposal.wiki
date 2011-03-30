@@ -93,3 +93,39 @@ so i mark them as optional features. Once i finished must-have functions develop
 
 = Online design demo =
 You can go [http://visual-tapestry.appspot.com/ here] to see project proposal details with picture demos.
+
+= Additional Info=
+== Things i have done already ==
+
+I have been working with both Eclipse and Tapestry for years, have much Eclipse plug-in development experience. Have subscribed Eclipse WTP and Tapestry mail list,discuss technology details in the mail lists. As GSoC suggested it, mail list is really a good place to discuss project ideas and some other details. I use the mail lists whenever possible to clarify the doubts by asking questions from the experts.Feedback that i received from mail lists helps me so much, thanks for self-giving open source developers and open source spirit.
+
+==Time Schedule==
+
+March 28 - April 8: Submitting the project proposal
+April 26 - May 24:Community Bonding Period (April 26 - May 24): Get to know mentors, read documentation, and prepare development environment.
+May 23 - May 31: Finish Tapertry libraries import wizard function
+Jun 1 - Jun 8: Finish Tapestry page/component creation wizard function
+Jun 9 - Jun 24: Finish Add Tapestry component support for WTP web editor palette function
+Jun 25 - Jul 2: Finish change-over function between Tapestry page's .tml file and .java file
+Jul 3 - Jul 12: Add Tapestry built in and custom components autocomplete function for WTP Web Page Editor's source view
+Jul 13 - Jul 20: Finish Tapestry component's parameters property view
+Jul 21 - Aug 6: Finish Autocomplete of properties from the .java page when editing the .tml file function
+Aug 7 - Aug 16: Develop time for both Optional features 8 and 9 (Validation function in Tapestry .tml file source view & Hyperlink function in Tapestry .tml file source view)
+Aug 17 - Aug 22: Scrub code, write tests, improve documentation and submit all my work
+
+==Something about me:==
+
+My name is Gavin Lei.My major is computer scienece and technology,and i am a postgraduate student of University of Science and Technology Beijing.I am familar with Eclipse,Java,ActionScript,Flex,SCXML,XML,XSL and some other open source projects,such as struts,spring,jstl,dojo and so on and have several years of Java development experience.I am familiar with many project in Apache Foundation,Eclipse Foundation as well as Dojo Foundation .
+My e-mail is gavingui2011@gmail.com, and my mobile phone number is +8615810117210. When i was working in IBM China,my mentor helped me a lot and know me well, if you are interested, my mentors may give you some impersonal evaluation about my ability and others.
+My mentor in IBM China Develop Lab: Qian Liang/Email:liangq@cn.ibm.com
+
+==My open source development experience==
+
+Built a tool for struts2 to generate XML config file
+Develop a Eclipse plugin for Apache SCXML engine which was a visualizing tool for navigating and editing complex SCXML state description XML.
+
+==What i did in my student period==
+
+2008.7 - 2010.8 : Work in IBM China Research Laborary,my team focus on telecom J2EE solution,get lots of XML relative knowledge
+2010.9: Won IBM Blue Pathway Excellment team member 2010
+2010.8 - 2011.3 : Work in IBM China Development Laborary as a intern 
